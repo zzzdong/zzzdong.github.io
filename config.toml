@@ -1,13 +1,18 @@
 # The URL the site will be built for
 base_url = "https://zzzdong.github.io"
 
+title = "zzzdong的自留地"
+description = "思绪飞扬，在这停留片刻"
+
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = true
 
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
+default_language = "zh-cn"
 
-theme = "linkita"
+theme = "radion"
+
 
 [markdown]
 # Whether to do syntax highlighting
@@ -16,5 +21,30 @@ highlight_code = true
 
 highlight_theme = "base16-ocean-dark"
 
+
+[search]
+index_format = "fuse_javascript"
+
 [extra]
 # Put all your custom variables here
+codeblock = true
+enable_search = false
+latex = true
+toc = true
+
+taxonomies = [
+    # You can enable/disable RSS
+    #{name = "categories", feed = false},
+    #{name = "tags", feed = false},
+]
+radion_menu = [
+    {url = "$BASE_URL", name = "Home"},
+    #{url = "$BASE_URL/categories", name = "Categories"},
+    #{url = "$BASE_URL/tags", name = "Tags"},
+]
+
+radion_title = "zzzdong的自留地"
+author = "zzzdong"
+github = "https://github.com/zzzdong"
+theme = "toggle" 
+comments = false
