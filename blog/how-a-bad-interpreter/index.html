@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <!-- Enable responsiveness on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    
+    <meta name="description" content="思绪飞扬，在这停留片刻" />
+    <meta property="og:description" content="思绪飞扬，在这停留片刻" />
+    <meta property="twitter:description" content="思绪飞扬，在这停留片刻" />
+    
+
+    <!-- Title -->
+      
+
+    <title>
+    
+    不专业的代码解释器会有多垃圾
+    
+</title>
+
+    <!-- Additional Facebook Meta Tags -->
+    <meta
+      property="og:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;how-a-bad-interpreter&#x2F;"
+    />
+    <meta
+      property="og:type"
+      content="article"
+    />
+    <meta property="og:title" content="不专业的代码解释器会有多垃圾" />
+    <meta
+      property="og:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Additional Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;how-a-bad-interpreter&#x2F;"
+    />
+    <meta name="twitter:title" content="不专业的代码解释器会有多垃圾" />
+    <meta
+      name="twitter:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Favicons -->
+    
+    <link
+      rel="icon"
+      type="image/png"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon-96x96.png"
+      sizes="96x96"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.svg"
+    />
+    <link
+      rel="shortcut icon"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.ico"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/apple-touch-icon.png"
+    />
+    <meta name="apple-mobile-web-app-title" content="不专业的代码解释器会有多垃圾" />
+    <link
+      rel="manifest"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/site.webmanifest"
+    />
+    
+
+    <!-- RSS Feed -->
+    
+
+    <!-- Load Styles -->
+    <link
+      rel="stylesheet"
+      href="https://zzzdong.github.io/site.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Pass Theme Preference as Data Attribute -->
+    <script src="https://zzzdong.github.io/js/init-theme.js"></script>
+
+    <!-- Reference return to click position script -->
+    <script defer src="https://zzzdong.github.io/js/reference-return.js"></script>
+
+    <!-- additional scripts -->
+    
+      
+        <script defer src="https://zzzdong.github.io/js/codeblock.js"></script>
+      
+      
+        <script src="https://zzzdong.github.io/js/toggle-theme.js"></script>
+      
+      
+<!-- MathJax script for rendering LaTeX math equations -->
+<script src="https://zzzdong.github.io/js/mathjax-config.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+  async
+></script>
+
+
+      
+    
+  </head>
+
+  <body class="hack main container">
+    
+    
+         
+    <header class="nav-header">
+      <nav
+        itemscope
+        itemtype="http://schema.org/SiteNavigationElement"
+        class="navbar"
+      >
+        <section class="nav-links">
+          
+          <a
+            itemprop="url"
+            class=""
+            href="https://zzzdong.github.io"
+          >
+            <span itemprop="name">Home</span>
+          </a>
+          
+        </section>
+      </nav>
+      <aside class="user-actions-container">
+         
+        <a id="dark-mode-toggle" href="#">
+          <img
+            src="https://zzzdong.github.io/icons/sun.svg"
+            id="sun-icon"
+            style="filter: invert(1)"
+            alt="Light mode"
+          />
+          <img
+            src="https://zzzdong.github.io/icons/moon.svg"
+            id="moon-icon"
+            alt="Dark mode"
+          />
+        </a>
+          
+        <a
+          href="https:&#x2F;&#x2F;github.com&#x2F;zzzdong"
+          class="feed-icon"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://zzzdong.github.io/icons/github.svg"
+            id="github-icon"
+            alt="GitHub"
+            class="social-icon"
+          />
+        </a>
+        
+      </aside>
+    </header>
+     
+    
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">不专业的代码解释器会有多垃圾</h1>
+        <data class="muted">
+    <svg class="icon i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <data>8 minute read</data>
+    <svg class="icon i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2025-06-23
+</data>
+    </header>
+
+    <article itemprop="articleBody">
+        
+            <!-- If no summary separate from content, just render content -->
+            <h2 id="qi">启</h2>
+<p>前排警告，Rust注意！！！</p>
+<p>上班总是CURD，摸鱼太多，一直没有目标。看到说程序员有三大浪漫：操作系统、编译原理和图形学。作为个不专业的程序员，我只能选择编译原理来摸索一下，来恶补基础知识。于是乎，就有了这坨东西<a href="https://github.com/zzzdong/evalit.git">evalit</a>。</p>
+<p>当然啦，也没有这么简单，一开始的时候，是看到了这个<a href="https://github.com/expr-lang/expr">expr</a>，得到了启发，觉得可以搞个类似东东来做个脚本工具来方便集成到程序里面，方便一些自定义、可编程的操作。至于现在这坨成果，那就有点离题万里。</p>
+<p>翻开提交记录，赫然看到第一次提交代码是在2023年9月1日。间间断断，有闲心就摸鱼写写，终于在近段时间，能搞出个能用的版本（代码是被强行rebase过的，记录也不完整了）。</p>
+<p>中间写时，没有规划，也没有设计，一直把框架变来变去，也是重构过好几版。就目前的情况，也只能说能跑，至于结果吗，也不知道它会不会跑乱掉。</p>
+<p>总体而言，可以看到一个不专业的程序员，能写出一个多垃圾的解释器。各位看到的话，要引以为鉴，切勿模仿。</p>
+<h2 id="cheng">承</h2>
+<p>总览上来看，这是一个语法解释器，可以编译一段代码到ByteCode，然后跑在一个基于寄存器的虚拟机上。</p>
+<p>如果各位不怕脏了眼睛，打开这项目，会发现这些：</p>
+<h3 id="yu-fa-she-ji">语法设计</h3>
+<p>说是设计，其实是没有设计，只有抄袭，而且还抄得不对，233。</p>
+<p>首先，一切都是对象？该语法只有一些简单类型：</p>
+<table><thead><tr><th>type</th><th>rust type</th><th>description</th></tr></thead><tbody>
+<tr><td><code>bool</code></td><td>bool</td><td>布尔值</td></tr>
+<tr><td><code>int</code></td><td>i64</td><td>整型数</td></tr>
+<tr><td><code>float</code></td><td>f64</td><td>浮点数</td></tr>
+<tr><td><code>string</code></td><td>String</td><td>字符串</td></tr>
+<tr><td><code>array</code></td><td>Vec<T></td><td>数组</td></tr>
+<tr><td><code>map</code></td><td>HashMap&lt;String, T&gt;</td><td>映射</td></tr>
+</tbody></table>
+<p>再就是运算符：只有简单的：</p>
+<table><thead><tr><th>operator</th><th>description</th></tr></thead><tbody>
+<tr><td><code>+</code></td><td>加法</td></tr>
+<tr><td><code>-</code></td><td>减法</td></tr>
+<tr><td><code>*</code></td><td>乘法</td></tr>
+<tr><td><code>/</code></td><td>除法</td></tr>
+<tr><td><code>%</code></td><td>取余</td></tr>
+<tr><td><code>==</code></td><td>相等</td></tr>
+<tr><td><code>!=</code></td><td>不等</td></tr>
+<tr><td><code>&lt;</code></td><td>小于</td></tr>
+<tr><td><code>&lt;=</code></td><td>小于或等于</td></tr>
+<tr><td><code>&gt;</code></td><td>大于</td></tr>
+<tr><td><code>&gt;=</code></td><td>大于或等于</td></tr>
+<tr><td><code>&amp;&amp;</code></td><td>逻辑与</td></tr>
+<tr><td><code>||</code></td><td>逻辑或</td></tr>
+</tbody></table>
+<p>有限的控制流：</p>
+<table><thead><tr><th>control flow</th><th>description</th></tr></thead><tbody>
+<tr><td><code>if</code></td><td>条件</td></tr>
+<tr><td><code>while</code></td><td>循环</td></tr>
+<tr><td><code>for</code></td><td>迭代器</td></tr>
+<tr><td><code>break</code></td><td>跳出循环</td></tr>
+<tr><td><code>continue</code></td><td>跳过当前循环</td></tr>
+<tr><td><code>return</code></td><td>返回</td></tr>
+</tbody></table>
+<h3 id="shi-xian">实现</h3>
+<p>整体解释器实现，会有几块：</p>
+<ol>
+<li>
+<p>语法解析。就是一个parser，解析出AST。使用<a href="https://github.com/pest-parser/pest">pest</a>写的。自己手写的词法解析，也不是不行，但是要应对各种语法处理逻辑，估计也写不好，还是直接用pest比较方便，就是要查查文档，对着各种已有的例子抄一抄就行了。</p>
+</li>
+<li>
+<p>语义检查和类型检查。这个没什么好介绍的，其实就是脱裤子放屁啦，这么点的语法解释器，也用不上这个大杀器，其实多余的。问就是AI生成的，代码不是自己写。</p>
+</li>
+<li>
+<p>Lowering。话说这个的中文是叫什么？就是把AST转化为IR。对的，这个项目，是搞了奇葩的IR层，其实没有什么意义的，特别是对于解释器来说。</p>
+</li>
+<li>
+<p>Codegen。应该叫代码生成？就是把上面的IR转为为ByteCode。为啥啊，单纯为了照顾坑爹的VM。同时，里面还有个搓搓的寄存器分配器，这个需要特别注意，千万不要去看，因为里面都是坑，没有正确的算法支撑，写的时候折腾最久，一切都是靠磨出来的，只依赖项目几个有限的测试用例来保证一下它可能是符合运行预期的。</p>
+</li>
+<li>
+<p>Runtime。就是上面提到的虚拟机以及围绕它的一些数据结构等等。这个坑爹虚拟机是基于寄存器，里面会模仿x86的一些行为，比如calling convention，函数调用使用压栈入参，函数局部变量使用寄存器和栈。注意啦，这个虚拟机的操作对象都是一个个Object哈，还记得上面说过的一切都是对象么，所有寄存器和栈里面都是<code>Arc&lt;RwLock&lt;Box&lt;dyn Object&gt;&gt;&gt;</code>。嘛，反正也没追求什么性能。</p>
+</li>
+<li>
+<p>GC。哈哈哈，想多了。这坨东西没有设计有垃圾回收，你都看到了，它用的是Arc。所以它没有正确垃圾处理，反正一直不回收也是一种垃圾处理嘛。对了，这样的它是应对了不了循环引用的。使用的时候请注意啦，小心它会一口一口吃掉你的内存。</p>
+</li>
+</ol>
+<h2 id="zhuan">转</h2>
+<p>假如看到了上面的说明，都还在看的话，可以说一下这个项目可以做到什么了。</p>
+<ol>
+<li>
+<p>它有几个有限的单元测试。里面可以看到，这个解释器可以完成一个简单的fib计算。就是斐波纳契数列的前10个总和会是143。</p>
+</li>
+<li>
+<p>正如scripting的例子里面展示的那样，可以嵌入async的rust里面，满足一些简单脚本功能，调用通过调用rust的暴露进去的方法来完成写逻辑处理。</p>
+</li>
+</ol>
+<h2 id="he">合</h2>
+<p>总的来说，作为一个不专业的程序员，写出的这坨糟糕的解释器，暴露了很多问题：</p>
+<ol>
+<li>
+<p>首先，项目规划，应该是要有设计，有想法，特别是要有技术支撑。不是科班出身，没有系统学过编译原理这一块的东西，靠着自己折腾，是很难搞的。</p>
+</li>
+<li>
+<p>其次，自身不行，AI来凑。目前来说，AI是能用的，特别用于帮忙梳理思路和补全代码；但是它的能力有限，现在仍然有些问题。等它发展起来，估计我这等混子程序员就要被淘汰了。</p>
+</li>
+<li>
+<p>最后，自己写代码，自己写代码，自己写代码。纸上得来终觉浅，绝知此事要躬行！</p>
+</li>
+</ol>
+<p>最后的最后，项目的地址是这个：https://github.com/zzzdong/evalit。</p>
+<blockquote>
+<p>PS：不排除下一步搞一个可以本地运行的native语言。就是用pest解析语法，cranelift生成机器码，mmtk来做垃圾回收，类似Go的模样。</p>
+</blockquote>
+
+        
+    </article>
+
+    <!-- Comment section -->
+    
+      
+    
+
+
+    <!-- Page footer -->
+    
+        <footer>
+            <hr>
+            <p>
+                
+                    Published by zzzdong
+                
+                
+                
+            </p>
+            
+            
+        </footer>
+    
+</article>
+
+
+  </body>
+</html>

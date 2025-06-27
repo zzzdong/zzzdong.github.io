@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <!-- Enable responsiveness on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    
+    <meta name="description" content="思绪飞扬，在这停留片刻" />
+    <meta property="og:description" content="思绪飞扬，在这停留片刻" />
+    <meta property="twitter:description" content="思绪飞扬，在这停留片刻" />
+    
+
+    <!-- Title -->
+      
+
+    <title>
+    
+    来重试GRPC吧
+    
+</title>
+
+    <!-- Additional Facebook Meta Tags -->
+    <meta
+      property="og:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;retry-grpc-in-rust&#x2F;"
+    />
+    <meta
+      property="og:type"
+      content="article"
+    />
+    <meta property="og:title" content="来重试GRPC吧" />
+    <meta
+      property="og:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Additional Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;retry-grpc-in-rust&#x2F;"
+    />
+    <meta name="twitter:title" content="来重试GRPC吧" />
+    <meta
+      name="twitter:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Favicons -->
+    
+    <link
+      rel="icon"
+      type="image/png"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon-96x96.png"
+      sizes="96x96"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.svg"
+    />
+    <link
+      rel="shortcut icon"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.ico"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/apple-touch-icon.png"
+    />
+    <meta name="apple-mobile-web-app-title" content="来重试GRPC吧" />
+    <link
+      rel="manifest"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/site.webmanifest"
+    />
+    
+
+    <!-- RSS Feed -->
+    
+
+    <!-- Load Styles -->
+    <link
+      rel="stylesheet"
+      href="https://zzzdong.github.io/site.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Pass Theme Preference as Data Attribute -->
+    <script src="https://zzzdong.github.io/js/init-theme.js"></script>
+
+    <!-- Reference return to click position script -->
+    <script defer src="https://zzzdong.github.io/js/reference-return.js"></script>
+
+    <!-- additional scripts -->
+    
+      
+        <script defer src="https://zzzdong.github.io/js/codeblock.js"></script>
+      
+      
+        <script src="https://zzzdong.github.io/js/toggle-theme.js"></script>
+      
+      
+<!-- MathJax script for rendering LaTeX math equations -->
+<script src="https://zzzdong.github.io/js/mathjax-config.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+  async
+></script>
+
+
+      
+    
+  </head>
+
+  <body class="hack main container">
+    
+    
+         
+    <header class="nav-header">
+      <nav
+        itemscope
+        itemtype="http://schema.org/SiteNavigationElement"
+        class="navbar"
+      >
+        <section class="nav-links">
+          
+          <a
+            itemprop="url"
+            class=""
+            href="https://zzzdong.github.io"
+          >
+            <span itemprop="name">Home</span>
+          </a>
+          
+        </section>
+      </nav>
+      <aside class="user-actions-container">
+         
+        <a id="dark-mode-toggle" href="#">
+          <img
+            src="https://zzzdong.github.io/icons/sun.svg"
+            id="sun-icon"
+            style="filter: invert(1)"
+            alt="Light mode"
+          />
+          <img
+            src="https://zzzdong.github.io/icons/moon.svg"
+            id="moon-icon"
+            alt="Dark mode"
+          />
+        </a>
+          
+        <a
+          href="https:&#x2F;&#x2F;github.com&#x2F;zzzdong"
+          class="feed-icon"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://zzzdong.github.io/icons/github.svg"
+            id="github-icon"
+            alt="GitHub"
+            class="social-icon"
+          />
+        </a>
+        
+      </aside>
+    </header>
+     
+    
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">来重试GRPC吧</h1>
+        <data class="muted">
+    <svg class="icon i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <data>3 minute read</data>
+    <svg class="icon i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2025-03-27
+</data>
+    </header>
+
+    <article itemprop="articleBody">
+        
+            <!-- If no summary separate from content, just render content -->
+            <h2 id="qian-yan">前言</h2>
+<p>最近在摸一个etcd的Rust client，很自然地使用<a href="https://github.com/hyperium/tonic">tonic</a>来做grpc的请求，但是发现tonic并<a href="https://github.com/hyperium/tonic/issues/733">没有</a>提供一个重试机制，在token失效的时候，无法自动重试，于是就尝试摸索一把，看一看能不能搞定。</p>
+<h2 id="zheng-wen">正文</h2>
+<p>先来看看tonic的文档，是可以用<a href="https://docs.rs/tonic/latest/tonic/service/trait.Interceptor.html">Interceptor</a>来做拦截器的，里面更是建议用<a href="https://github.com/tower-rs/tower">tower</a>机制来做中间件。这两个中间件的实现都有一个问题，就是不能重发数据，因为它们都是在grpc的transport层来做的，而且在transport层已经是只有一个不能Clone的<code>tonic::Request&lt;tonic::body::Body&gt;</code>，所以不能在错误时重发。</p>
+<p>既然在grpc的底层transport太底层了不能重发，那么我们就看再上一层的。</p>
+<p>好啦，我们观察grpc的请求的话，可以看到grpc的client和server交互存在4种模式：</p>
+<ol>
+<li>unary</li>
+<li>server stream</li>
+<li>client stream</li>
+<li>bidirectional stream</li>
+</ol>
+<p>其中unary和server stream都是client发送一个message，然后等待服务器响应的。即发送<code>tonic::Request&lt;prost::Message&gt;</code>，<code>prost::Message</code>通常是一个可clone的struct。我们就可以通过Clone message，然后发送多次。</p>
+<p>在查看tonic的代码时，我们可以找到<a href="https://docs.rs/tonic/latest/tonic/client/struct.Grpc.html">tonic::client::Grpc</a>，其中它提供了对4种不同的模式发送消息。</p>
+<p>在编程的世界中，任何问题都可以通过增加一个间接的中间层来解决。那么邪恶开始了，直接拷贝抽取tonic::client::Grpc来加一个trait，再实现它。</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">use </span><span>prost::Message;
+</span><span style="color:#b48ead;">use </span><span>tonic::{Request, Response, Status, Streaming};
+</span><span>
+</span><span style="color:#b48ead;">pub trait </span><span>GrpcService {
+</span><span>    async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">unary</span><span>&lt;M1: Message + Clone, M2: Message + Clone&gt;(&amp;</span><span style="color:#bf616a;">self</span><span>, </span><span style="color:#bf616a;">request</span><span>: Request&lt;M1&gt;, </span><span style="color:#bf616a;">path</span><span>: PathAndQuery) -&gt; Result&lt;Response&lt;M2&gt;, Status&gt;;
+</span><span>
+</span><span>    async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">server_stream</span><span>&lt;M1: Message + Clone, M2: Message&gt;(&amp;</span><span style="color:#bf616a;">self</span><span>, </span><span style="color:#bf616a;">request</span><span>: Request&lt;M1&gt;, </span><span style="color:#bf616a;">path</span><span>: PathAndQuery) -&gt; Result&lt;Response&lt;Streaming&lt;M2&gt;&gt;&gt;, Status&gt;;
+</span><span>
+</span><span>    async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">client_stream</span><span>&lt;M1: Message, M2: Message&gt;(&amp;</span><span style="color:#bf616a;">self</span><span>, </span><span style="color:#bf616a;">request</span><span>: Request&lt;Streaming&lt;M1&gt;&gt;, </span><span style="color:#bf616a;">path</span><span>: PathAndQuery) -&gt; Result&lt;Response&lt;M2&gt;, Status&gt;;
+</span><span>
+</span><span>    async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">bidirectional_stream</span><span>&lt;M1: Message, M2: Message&gt;(&amp;</span><span style="color:#bf616a;">self</span><span>, </span><span style="color:#bf616a;">request</span><span>: Request&lt;Streaming&lt;M1&gt;&gt;, </span><span style="color:#bf616a;">path</span><span>: PathAndQuery) -&gt; Result&lt;Response&lt;Streaming&lt;M2&gt;&gt;&gt;, Status&gt;;
+</span><span>}
+</span></code></pre>
+<p>现在就可以实现GrpcService这个trait，其中底层调用tonic::client::Grpc。</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">pub struct </span><span>TonicClient {
+</span><span>    </span><span style="color:#bf616a;">inner</span><span>: tonic::client::Grpc&lt;tonic::transport::Channel&gt;,
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">impl </span><span>GrpcService </span><span style="color:#b48ead;">for </span><span>TonicClient {
+</span><span>    async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">unary</span><span>&lt;M1: Message + Clone, M2: Message + Clone&gt;(&amp;</span><span style="color:#bf616a;">self</span><span>, </span><span style="color:#bf616a;">request</span><span>: Request&lt;M1&gt;， </span><span style="color:#bf616a;">path</span><span>: PathAndQuery) -&gt; Result&lt;Response&lt;M2&gt;, Status&gt; {
+</span><span>        </span><span style="color:#bf616a;">self</span><span>.inner.</span><span style="color:#96b5b4;">ready</span><span>().await.</span><span style="color:#96b5b4;">map_err</span><span>(|</span><span style="color:#bf616a;">e</span><span>| {
+</span><span>            </span><span style="color:#b48ead;">crate</span><span>::Error::new(
+</span><span>                </span><span style="color:#b48ead;">crate</span><span>::ErrKind::Grpc,
+</span><span>                format!(&quot;</span><span style="color:#a3be8c;">Service was not ready: </span><span style="color:#d08770;">{}</span><span>&quot;, e),
+</span><span>            )
+</span><span>        })?;
+</span><span>        </span><span style="color:#b48ead;">let</span><span> codec = tonic::codec::ProstCodec::default();
+</span><span>
+</span><span>        </span><span style="color:#bf616a;">self</span><span>.inner.</span><span style="color:#96b5b4;">unary</span><span>(req, path, codec).await.</span><span style="color:#96b5b4;">map_err</span><span>(Into::into)
+</span><span>    }
+</span><span>    ......
+</span><span>}
+</span><span>
+</span></code></pre>
+<p>代价来啦，由于是重写了Grpc请求部分，所有tonic_build生成的代码就失效了，需要手动写了。例如：</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Debug, Clone)]
+</span><span style="color:#b48ead;">pub struct </span><span>InnerKvClient&lt;S&gt; {
+</span><span>    </span><span style="color:#bf616a;">service</span><span>: S,
+</span><span>}
+</span><span style="color:#b48ead;">impl</span><span>&lt;S&gt; InnerKvClient&lt;S&gt;
+</span><span style="color:#b48ead;">where
+</span><span>    S: GrpcService,
+</span><span>{
+</span><span>    </span><span style="color:#b48ead;">pub fn </span><span style="color:#8fa1b3;">new</span><span>(</span><span style="color:#bf616a;">service</span><span>: S) -&gt; </span><span style="color:#b48ead;">Self </span><span>{
+</span><span>        </span><span style="color:#b48ead;">Self </span><span>{ service }
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">pub</span><span> async </span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">range</span><span>(
+</span><span>        &amp;</span><span style="color:#b48ead;">mut </span><span style="color:#bf616a;">self</span><span>,
+</span><span>        </span><span style="color:#bf616a;">request</span><span>: impl tonic::IntoRequest&lt;pb::RangeRequest&gt;,
+</span><span>    ) -&gt; Result&lt;tonic::Response&lt;pb::RangeResponse&gt;&gt; {
+</span><span>        </span><span style="color:#b48ead;">let</span><span> path = http::uri::PathAndQuery::from_static(&quot;</span><span style="color:#a3be8c;">/etcdserverpb.KV/Range</span><span>&quot;);
+</span><span>        </span><span style="color:#bf616a;">self</span><span>.service.</span><span style="color:#96b5b4;">unary</span><span>(request.</span><span style="color:#96b5b4;">into_request</span><span>(), path).await
+</span><span>    }
+</span><span>    ......
+</span><span>}
+</span></code></pre>
+<p>最后，回到开始需求：为etcd client添加一个自动刷新token的功能。在unary请求时，出现token失效的情况，就重新去申请token，并重新发起请求。</p>
+<p>至于watch这样的streaming的请求，直接简单粗暴地在请求前不管三七二十一的先重新申请token再发送请求。</p>
+<h2 id="bian-wai-hua">编外话</h2>
+<p>对具体实现的代码感兴趣的，可以<a href="https://github.com/zzzdong/etcd-client-rust">查看我的github</a>。</p>
+
+        
+    </article>
+
+    <!-- Comment section -->
+    
+      
+    
+
+
+    <!-- Page footer -->
+    
+        <footer>
+            <hr>
+            <p>
+                
+                    Published by zzzdong
+                
+                
+                
+            </p>
+            
+            
+        </footer>
+    
+</article>
+
+
+  </body>
+</html>

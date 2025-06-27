@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <!-- Enable responsiveness on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    
+    <meta name="description" content="思绪飞扬，在这停留片刻" />
+    <meta property="og:description" content="思绪飞扬，在这停留片刻" />
+    <meta property="twitter:description" content="思绪飞扬，在这停留片刻" />
+    
+
+    <!-- Title -->
+      
+
+    <title>
+    
+    搭建Rust的Windows GNU开发环境
+    
+</title>
+
+    <!-- Additional Facebook Meta Tags -->
+    <meta
+      property="og:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;rust-windows-gnu-env&#x2F;"
+    />
+    <meta
+      property="og:type"
+      content="article"
+    />
+    <meta property="og:title" content="搭建Rust的Windows GNU开发环境" />
+    <meta
+      property="og:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Additional Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https:&#x2F;&#x2F;zzzdong.github.io&#x2F;blog&#x2F;rust-windows-gnu-env&#x2F;"
+    />
+    <meta name="twitter:title" content="搭建Rust的Windows GNU开发环境" />
+    <meta
+      name="twitter:image"
+      content="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/web-app-manifest-512x512.png"
+    />
+
+    <!-- Favicons -->
+    
+    <link
+      rel="icon"
+      type="image/png"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon-96x96.png"
+      sizes="96x96"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.svg"
+    />
+    <link
+      rel="shortcut icon"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/favicon.ico"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/apple-touch-icon.png"
+    />
+    <meta name="apple-mobile-web-app-title" content="搭建Rust的Windows GNU开发环境" />
+    <link
+      rel="manifest"
+      href="https:&#x2F;&#x2F;zzzdong.github.io/icons/favicon/site.webmanifest"
+    />
+    
+
+    <!-- RSS Feed -->
+    
+
+    <!-- Load Styles -->
+    <link
+      rel="stylesheet"
+      href="https://zzzdong.github.io/site.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Pass Theme Preference as Data Attribute -->
+    <script src="https://zzzdong.github.io/js/init-theme.js"></script>
+
+    <!-- Reference return to click position script -->
+    <script defer src="https://zzzdong.github.io/js/reference-return.js"></script>
+
+    <!-- additional scripts -->
+    
+      
+        <script defer src="https://zzzdong.github.io/js/codeblock.js"></script>
+      
+      
+        <script src="https://zzzdong.github.io/js/toggle-theme.js"></script>
+      
+      
+<!-- MathJax script for rendering LaTeX math equations -->
+<script src="https://zzzdong.github.io/js/mathjax-config.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+  async
+></script>
+
+
+      
+    
+  </head>
+
+  <body class="hack main container">
+    
+    
+         
+    <header class="nav-header">
+      <nav
+        itemscope
+        itemtype="http://schema.org/SiteNavigationElement"
+        class="navbar"
+      >
+        <section class="nav-links">
+          
+          <a
+            itemprop="url"
+            class=""
+            href="https://zzzdong.github.io"
+          >
+            <span itemprop="name">Home</span>
+          </a>
+          
+        </section>
+      </nav>
+      <aside class="user-actions-container">
+         
+        <a id="dark-mode-toggle" href="#">
+          <img
+            src="https://zzzdong.github.io/icons/sun.svg"
+            id="sun-icon"
+            style="filter: invert(1)"
+            alt="Light mode"
+          />
+          <img
+            src="https://zzzdong.github.io/icons/moon.svg"
+            id="moon-icon"
+            alt="Dark mode"
+          />
+        </a>
+          
+        <a
+          href="https:&#x2F;&#x2F;github.com&#x2F;zzzdong"
+          class="feed-icon"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://zzzdong.github.io/icons/github.svg"
+            id="github-icon"
+            alt="GitHub"
+            class="social-icon"
+          />
+        </a>
+        
+      </aside>
+    </header>
+     
+    
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">搭建Rust的Windows GNU开发环境</h1>
+        <data class="muted">
+    <svg class="icon i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <data>2 minute read</data>
+    <svg class="icon i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2025-04-14
+</data>
+    </header>
+
+    <article itemprop="articleBody">
+        
+            <!-- If no summary separate from content, just render content -->
+            <h2 id="qian-yan">前言</h2>
+<p>在Windows上，使用Rust开发时，官方是推荐MSVC的环境，但是MSVC环境需要VS，或者至少Microsoft C++ 生成工具。这里需要注意的一点，就是它们的许可问题，在我们常用的Community版本中，是有比较多的限制的，它要求在开源项目，或者是非企业环境中。</p>
+<p>这时，gnu版本是一个不错的选择，它相对没有那么多的约束。</p>
+<p>只不过它的安装会有些麻烦。</p>
+<h2 id="an-zhuang-gnuhuan-jing">安装gnu环境</h2>
+<ol>
+<li>通过rustup安装rustc。</li>
+</ol>
+<p>下载 https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe ，双击安装。使用直接回车默认配置安装即可。</p>
+<p>当已有的rustup的时候，可以：</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>rustup toolchain install stable-x86_64-pc-windows-gnu
+</span><span>rustup default stable-x86_64-pc-windows-gnu
+</span></code></pre>
+<ol start="2">
+<li>安装mingw-w64开发工具。</li>
+</ol>
+<p>根据 https://www.mingw-w64.org/downloads/#w64devkit 的说明，<a href="https://github.com/skeeto/w64devkit/releases">下载</a>安装w64devkit开发工具。</p>
+<p>下载后，运行exe，选择一个目录解压安装。</p>
+<p>配置环境变量，把上面的安装目录的bin目录添加到PATH中。</p>
+<ol start="3">
+<li>修正w64devkit的兼容性问题。</li>
+</ol>
+<p>上面安装后，运行cargo build可能会报错，出现<code>ld.exe: cannot find -lgcc_eh</code>相似的错误。这时，需要手动修正一下。</p>
+<p>生成一个空的<code>libgcc_eh.a</code>文件。</p>
+<pre data-lang="shell" style="background-color:#2b303b;color:#c0c5ce;" class="language-shell "><code class="language-shell" data-lang="shell"><span>cd w64devkit/x86_64-w64-mingw32/lib
+</span><span>ar rcs libgcc_eh.a
+</span></code></pre>
+<h2 id="can-kao-zi-liao">参考资料</h2>
+<ol>
+<li>https://github.com/stacks-network/stacks-core/pull/5937#issuecomment-2747629024</li>
+</ol>
+
+        
+    </article>
+
+    <!-- Comment section -->
+    
+      
+    
+
+
+    <!-- Page footer -->
+    
+        <footer>
+            <hr>
+            <p>
+                
+                    Published by zzzdong
+                
+                
+                
+            </p>
+            
+            
+        </footer>
+    
+</article>
+
+
+  </body>
+</html>
