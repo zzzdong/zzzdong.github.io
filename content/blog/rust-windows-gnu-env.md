@@ -28,7 +28,7 @@ rustup default stable-x86_64-pc-windows-gnu
 
 2. 安装mingw-w64开发工具。
 
-根据 https://www.mingw-w64.org/downloads/#w64devkit 的说明，下载安装w64devkit开发工具。
+根据 https://www.mingw-w64.org/downloads/#w64devkit 的说明，[下载](https://github.com/skeeto/w64devkit/releases)安装w64devkit开发工具。
 
 下载后，运行exe，选择一个目录解压安装。
 
