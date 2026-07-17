@@ -11,7 +11,7 @@ title = '我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错'
 
 我用vibe code的方式开发了一个纯Rust实现的[Kafka客户端](https://github.com/zzzdong/kafka_client)，性能还不错。在[测试](https://github.com/zzzdong/kafka-benchmark)中，发现比Rust包装的[rdkafka](https://crates.io/crates/rdkafka/0.39.0)还快了一些————它是C库[librdkafka](https://github.com/confluentinc/librdkafka)的封装。
 
-在[上篇文章](https://zzzdong.github.io/blog/i-write-a-kafka-cli/)中介绍的kfk就是基于它来实现的。
+在[上篇文章](https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/)中介绍的kfk就是基于它来实现的。
 
 ## 有意思的 Kafka 协议
 
