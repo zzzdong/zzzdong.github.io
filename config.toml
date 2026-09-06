@@ -1,47 +1,56 @@
 # The URL the site will be built for
 base_url = "https://zzzdong.github.io"
 
+# The title of the site
 title = "zzzdong的自留地"
+
+# The description of the site
 description = "思绪飞扬，在这停留片刻"
+
+author = "zzzdong"
 
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = true
 
-# Whether to build a search index to be used later on by a JavaScript library
-build_search_index = true
+# Whether to minify the HTML when building the site
+minify_html = false
+
+# Whether to generate an Atom feed
+generate_feeds = true
+
 default_language = "zh-cn"
 
-theme = "radion"
+theme = "hacker"
 
+# Taxonomies
+taxonomies = [{ name = "tags" }]
 
 [markdown.highlighting]
-light_theme = "material-theme-lighter"
-dark_theme = "material-theme-ocean"
-
-
-[search]
-index_format = "fuse_javascript"
+theme = "dark-plus"
 
 [extra]
-# Put all your custom variables here
-codeblock = true
-enable_search = false
-latex = true
-toc = true
+title_separator = "|"
 
-taxonomies = [
-    # You can enable/disable RSS
-    #{name = "categories", feed = false},
-    #{name = "tags", feed = false},
-]
-radion_menu = [
-    {url = "$BASE_URL", name = "Home"},
-    #{url = "$BASE_URL/categories", name = "Categories"},
-    #{url = "$BASE_URL/tags", name = "Tags"},
+# Menu items
+menu = [{ url = "/blog", name = "Blog" }]
+
+language_code = "zh-CN"
+
+# Enable OpenGraph metadata
+opengraph = true
+
+timezone = "Asia/Shanghai"
+
+# provide link to edit page on github
+edit_page = true
+
+# Social links
+social_links = [
+  { platform = "github", user_id = "zzzdong" },
+  { platform = "feed", user_id = true },
 ]
 
-radion_title = "zzzdong的自留地"
-author = "zzzdong"
-github = "https://github.com/zzzdong"
-theme = "toggle" 
-comments = false
+# GitHub settings that are used to generate the edit page link
+[extra.github]
+username = "zzzdong"
+repo = "zzzdong.github.io"
