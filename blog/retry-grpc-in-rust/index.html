@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+  
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>来重试GRPC吧 | zzzdong的自留地</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/blog/retry-grpc-in-rust/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="来重试GRPC吧">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="来重试GRPC吧">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/blog/retry-grpc-in-rust/">
+
+  <meta property="og:site_name" content="来重试GRPC吧">
+  <meta property="og:locale" content="zh_CN">
+    <meta property="article:published_time" content="2025-03-27T17:56:24+08:00">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "url": "https://zzzdong.github.io/blog/retry-grpc-in-rust",
+      "name": "来重试GRPC吧",
+      "description": "思绪飞扬，在这停留片刻",
+      "author": {
+        "@type": "Person",
+        "name": "zzzdong"
+      }
+    }
+    </script>
+
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<article class="page">
+  <div class="header-container">
+    <h2>来重试GRPC吧</h2>
+    <div class="improve hide-on-mobiles">
+      
+<a href="https://github.com/zzzdong/zzzdong.github.io/edit/master/content/blog/retry-grpc-in-rust.md" title="Help improve page https://zzzdong.github.io/blog/retry-grpc-in-rust/">Improve this page</a>
+
+    </div>
+  </div>
+  <div class="page-info">
+    <time class="page-time smaller" datetime="2025-03-27T17:56:24+08:00">
+      Posted on March 27, 2025 at 17:56 CST
+    </time>
+  </div>
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>最近在摸一个etcd的Rust client，很自然地使用<a rel="external" href="https://github.com/hyperium/tonic">tonic</a>来做grpc的请求，但是发现tonic并<a rel="external" href="https://github.com/hyperium/tonic/issues/733">没有</a>提供一个重试机制，在token失效的时候，无法自动重试，于是就尝试摸索一把，看一看能不能搞定。</p>
+<h2 id="zheng-wen">正文</h2>
+<p>先来看看tonic的文档，是可以用<a rel="external" href="https://docs.rs/tonic/latest/tonic/service/trait.Interceptor.html">Interceptor</a>来做拦截器的，里面更是建议用<a rel="external" href="https://github.com/tower-rs/tower">tower</a>机制来做中间件。这两个中间件的实现都有一个问题，就是不能重发数据，因为它们都是在grpc的transport层来做的，而且在transport层已经是只有一个不能Clone的<code>tonic::Request&lt;tonic::body::Body&gt;</code>，所以不能在错误时重发。</p>
+<p>既然在grpc的底层transport太底层了不能重发，那么我们就看再上一层的。</p>
+<p>好啦，我们观察grpc的请求的话，可以看到grpc的client和server交互存在4种模式：</p>
+<ol>
+<li>unary</li>
+<li>server stream</li>
+<li>client stream</li>
+<li>bidirectional stream</li>
+</ol>
+<p>其中unary和server stream都是client发送一个message，然后等待服务器响应的。即发送<code>tonic::Request&lt;prost::Message&gt;</code>，<code>prost::Message</code>通常是一个可clone的struct。我们就可以通过Clone message，然后发送多次。</p>
+<p>在查看tonic的代码时，我们可以找到<a rel="external" href="https://docs.rs/tonic/latest/tonic/client/struct.Grpc.html">tonic::client::Grpc</a>，其中它提供了对4种不同的模式发送消息。</p>
+<p>在编程的世界中，任何问题都可以通过增加一个间接的中间层来解决。那么邪恶开始了，直接拷贝抽取tonic::client::Grpc来加一个trait，再实现它。</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="rust"><span class="giallo-l"><span style="color: #569CD6;">use</span><span style="color: #4EC9B0;"> prost</span><span>::</span><span style="color: #4EC9B0;">Message</span><span>;</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">use</span><span style="color: #4EC9B0;"> tonic</span><span>::{</span><span style="color: #4EC9B0;">Request</span><span>,</span><span style="color: #4EC9B0;"> Response</span><span>,</span><span style="color: #4EC9B0;"> Status</span><span>,</span><span style="color: #4EC9B0;"> Streaming</span><span>};</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">pub trait</span><span style="color: #4EC9B0;"> GrpcService</span><span> {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    async fn</span><span style="color: #DCDCAA;"> unary</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span> +</span><span style="color: #4EC9B0;"> Clone</span><span>,</span><span style="color: #4EC9B0;"> M2</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span> +</span><span style="color: #4EC9B0;"> Clone</span><span>&gt;(&amp;</span><span style="color: #569CD6;">self</span><span>,</span><span style="color: #9CDCFE;"> request</span><span>:</span><span style="color: #4EC9B0;"> Request</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>&gt;,</span><span style="color: #9CDCFE;"> path</span><span>:</span><span style="color: #4EC9B0;"> PathAndQuery</span><span>) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #4EC9B0;">M2</span><span>&gt;,</span><span style="color: #4EC9B0;"> Status</span><span>&gt;;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    async fn</span><span style="color: #DCDCAA;"> server_stream</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span> +</span><span style="color: #4EC9B0;"> Clone</span><span>,</span><span style="color: #4EC9B0;"> M2</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span>&gt;(&amp;</span><span style="color: #569CD6;">self</span><span>,</span><span style="color: #9CDCFE;"> request</span><span>:</span><span style="color: #4EC9B0;"> Request</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>&gt;,</span><span style="color: #9CDCFE;"> path</span><span>:</span><span style="color: #4EC9B0;"> PathAndQuery</span><span>) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #4EC9B0;">Streaming</span><span>&lt;</span><span style="color: #4EC9B0;">M2</span><span>&gt;&gt;&gt;,</span><span style="color: #4EC9B0;"> Status</span><span>&gt;;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    async fn</span><span style="color: #DCDCAA;"> client_stream</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span>,</span><span style="color: #4EC9B0;"> M2</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span>&gt;(&amp;</span><span style="color: #569CD6;">self</span><span>,</span><span style="color: #9CDCFE;"> request</span><span>:</span><span style="color: #4EC9B0;"> Request</span><span>&lt;</span><span style="color: #4EC9B0;">Streaming</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>&gt;&gt;,</span><span style="color: #9CDCFE;"> path</span><span>:</span><span style="color: #4EC9B0;"> PathAndQuery</span><span>) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #4EC9B0;">M2</span><span>&gt;,</span><span style="color: #4EC9B0;"> Status</span><span>&gt;;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    async fn</span><span style="color: #DCDCAA;"> bidirectional_stream</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span>,</span><span style="color: #4EC9B0;"> M2</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span>&gt;(&amp;</span><span style="color: #569CD6;">self</span><span>,</span><span style="color: #9CDCFE;"> request</span><span>:</span><span style="color: #4EC9B0;"> Request</span><span>&lt;</span><span style="color: #4EC9B0;">Streaming</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>&gt;&gt;,</span><span style="color: #9CDCFE;"> path</span><span>:</span><span style="color: #4EC9B0;"> PathAndQuery</span><span>) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #4EC9B0;">Streaming</span><span>&lt;</span><span style="color: #4EC9B0;">M2</span><span>&gt;&gt;&gt;,</span><span style="color: #4EC9B0;"> Status</span><span>&gt;;</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre>
+<p>现在就可以实现GrpcService这个trait，其中底层调用tonic::client::Grpc。</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="rust"><span class="giallo-l"><span style="color: #569CD6;">pub struct</span><span style="color: #4EC9B0;"> TonicClient</span><span> {</span></span>
+<span class="giallo-l"><span style="color: #9CDCFE;">    inner</span><span>:</span><span style="color: #4EC9B0;"> tonic</span><span>::</span><span style="color: #4EC9B0;">client</span><span>::</span><span style="color: #4EC9B0;">Grpc</span><span>&lt;</span><span style="color: #9CDCFE;">tonic</span><span>::</span><span style="color: #9CDCFE;">transport</span><span>::</span><span style="color: #4EC9B0;">Channel</span><span>&gt;,</span></span>
+<span class="giallo-l"><span>}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">impl</span><span style="color: #4EC9B0;"> GrpcService</span><span style="color: #C586C0;"> for</span><span style="color: #4EC9B0;"> TonicClient</span><span> {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    async fn</span><span style="color: #DCDCAA;"> unary</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span> +</span><span style="color: #4EC9B0;"> Clone</span><span>,</span><span style="color: #4EC9B0;"> M2</span><span>:</span><span style="color: #4EC9B0;"> Message</span><span> +</span><span style="color: #4EC9B0;"> Clone</span><span>&gt;(&amp;</span><span style="color: #569CD6;">self</span><span>,</span><span style="color: #9CDCFE;"> request</span><span>:</span><span style="color: #4EC9B0;"> Request</span><span>&lt;</span><span style="color: #4EC9B0;">M1</span><span>&gt;， </span><span style="color: #9CDCFE;">path</span><span>:</span><span style="color: #4EC9B0;"> PathAndQuery</span><span>) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #4EC9B0;">M2</span><span>&gt;,</span><span style="color: #4EC9B0;"> Status</span><span>&gt; {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">        self</span><span>.inner.</span><span style="color: #DCDCAA;">ready</span><span>().</span><span style="color: #C586C0;">await</span><span>.</span><span style="color: #DCDCAA;">map_err</span><span>(|</span><span style="color: #9CDCFE;">e</span><span>| {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">            crate</span><span>::</span><span style="color: #4EC9B0;">Error</span><span>::</span><span style="color: #DCDCAA;">new</span><span>(</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">                crate</span><span>::</span><span style="color: #4EC9B0;">ErrKind</span><span>::</span><span style="color: #4EC9B0;">Grpc</span><span>,</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">                format!</span><span>(</span><span style="color: #CE9178;">&quot;Service was not ready: {}&quot;</span><span>,</span><span style="color: #9CDCFE;"> e</span><span>),</span></span>
+<span class="giallo-l"><span>            )</span></span>
+<span class="giallo-l"><span>        })?;</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">        let</span><span style="color: #9CDCFE;"> codec</span><span> =</span><span style="color: #4EC9B0;"> tonic</span><span>::</span><span style="color: #4EC9B0;">codec</span><span>::</span><span style="color: #4EC9B0;">ProstCodec</span><span>::</span><span style="color: #DCDCAA;">default</span><span>();</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">        self</span><span>.inner.</span><span style="color: #DCDCAA;">unary</span><span>(</span><span style="color: #9CDCFE;">req</span><span>,</span><span style="color: #9CDCFE;"> path</span><span>,</span><span style="color: #9CDCFE;"> codec</span><span>).</span><span style="color: #C586C0;">await</span><span>.</span><span style="color: #DCDCAA;">map_err</span><span>(</span><span style="color: #4EC9B0;">Into</span><span>::</span><span style="color: #9CDCFE;">into</span><span>)</span></span>
+<span class="giallo-l"><span>    }</span></span>
+<span class="giallo-l"><span>    ......</span></span>
+<span class="giallo-l"><span>}</span></span>
+<span class="giallo-l"></span></code></pre>
+<p>代价来啦，由于是重写了Grpc请求部分，所有tonic_build生成的代码就失效了，需要手动写了。例如：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="rust"><span class="giallo-l"><span>#[derive(</span><span style="color: #4EC9B0;">Debug</span><span>,</span><span style="color: #4EC9B0;"> Clone</span><span>)]</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">pub struct</span><span style="color: #4EC9B0;"> InnerKvClient</span><span>&lt;</span><span style="color: #4EC9B0;">S</span><span>&gt; {</span></span>
+<span class="giallo-l"><span style="color: #9CDCFE;">    service</span><span>:</span><span style="color: #4EC9B0;"> S</span><span>,</span></span>
+<span class="giallo-l"><span>}</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">impl</span><span>&lt;</span><span style="color: #4EC9B0;">S</span><span>&gt;</span><span style="color: #4EC9B0;"> InnerKvClient</span><span>&lt;</span><span style="color: #4EC9B0;">S</span><span>&gt;</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">where</span></span>
+<span class="giallo-l"><span style="color: #4EC9B0;">    S</span><span>:</span><span style="color: #4EC9B0;"> GrpcService</span><span>,</span></span>
+<span class="giallo-l"><span>{</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    pub fn</span><span style="color: #DCDCAA;"> new</span><span>(</span><span style="color: #9CDCFE;">service</span><span>:</span><span style="color: #4EC9B0;"> S</span><span>) -&gt;</span><span style="color: #569CD6;"> Self</span><span> {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">        Self</span><span> {</span><span style="color: #9CDCFE;"> service</span><span> }</span></span>
+<span class="giallo-l"><span>    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    pub async fn</span><span style="color: #DCDCAA;"> range</span><span>(</span></span>
+<span class="giallo-l"><span>        &amp;</span><span style="color: #569CD6;">mut self</span><span>,</span></span>
+<span class="giallo-l"><span style="color: #9CDCFE;">        request</span><span>:</span><span style="color: #569CD6;"> impl</span><span style="color: #4EC9B0;"> tonic</span><span>::</span><span style="color: #4EC9B0;">IntoRequest</span><span>&lt;</span><span style="color: #9CDCFE;">pb</span><span>::</span><span style="color: #4EC9B0;">RangeRequest</span><span>&gt;,</span></span>
+<span class="giallo-l"><span>    ) -&gt;</span><span style="color: #4EC9B0;"> Result</span><span>&lt;</span><span style="color: #9CDCFE;">tonic</span><span>::</span><span style="color: #4EC9B0;">Response</span><span>&lt;</span><span style="color: #9CDCFE;">pb</span><span>::</span><span style="color: #4EC9B0;">RangeResponse</span><span>&gt;&gt; {</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">        let</span><span style="color: #9CDCFE;"> path</span><span> =</span><span style="color: #4EC9B0;"> http</span><span>::</span><span style="color: #4EC9B0;">uri</span><span>::</span><span style="color: #4EC9B0;">PathAndQuery</span><span>::</span><span style="color: #DCDCAA;">from_static</span><span>(</span><span style="color: #CE9178;">&quot;/etcdserverpb.KV/Range&quot;</span><span>);</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">        self</span><span>.service.</span><span style="color: #DCDCAA;">unary</span><span>(</span><span style="color: #9CDCFE;">request</span><span>.</span><span style="color: #DCDCAA;">into_request</span><span>(),</span><span style="color: #9CDCFE;"> path</span><span>).</span><span style="color: #C586C0;">await</span></span>
+<span class="giallo-l"><span>    }</span></span>
+<span class="giallo-l"><span>    ......</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre>
+<p>最后，回到开始需求：为etcd client添加一个自动刷新token的功能。在unary请求时，出现token失效的情况，就重新去申请token，并重新发起请求。</p>
+<p>至于watch这样的streaming的请求，直接简单粗暴地在请求前不管三七二十一的先重新申请token再发送请求。</p>
+<h2 id="bian-wai-hua">编外话</h2>
+<p>对具体实现的代码感兴趣的，可以<a rel="external" href="https://github.com/zzzdong/etcd-client-rust">查看我的github</a>。</p>
+
+  </div>
+</article>
+
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>

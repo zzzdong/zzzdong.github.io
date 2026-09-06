@@ -1,0 +1,156 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+  
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错 | zzzdong的自留地</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">
+
+  <meta property="og:site_name" content="我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错">
+  <meta property="og:locale" content="zh_CN">
+    <meta property="article:published_time" content="2026-07-07T21:18:00+08:00">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "url": "https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib",
+      "name": "我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错",
+      "description": "思绪飞扬，在这停留片刻",
+      "author": {
+        "@type": "Person",
+        "name": "zzzdong"
+      }
+    }
+    </script>
+
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<article class="page">
+  <div class="header-container">
+    <h2>我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错</h2>
+    <div class="improve hide-on-mobiles">
+      
+<a href="https://github.com/zzzdong/zzzdong.github.io/edit/master/content/blog/i-wrote-a-kafka-client-lib.md" title="Help improve page https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">Improve this page</a>
+
+    </div>
+  </div>
+  <div class="page-info">
+    <time class="page-time smaller" datetime="2026-07-07T21:18:00+08:00">
+      Posted on July  7, 2026 at 21:18 CST
+    </time>
+  </div>
+  <div class="entry">
+    <blockquote>
+<p>AI预警！Rust预警！胡说八道警告！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>我用vibe code的方式开发了一个纯Rust实现的<a rel="external" href="https://github.com/zzzdong/kafka_client">Kafka客户端</a>，性能还不错。在<a rel="external" href="https://github.com/zzzdong/kafka-benchmark">测试</a>中，发现比Rust包装的<a rel="external" href="https://crates.io/crates/rdkafka/0.39.0">rdkafka</a>还快了一些————它是C库<a rel="external" href="https://github.com/confluentinc/librdkafka">librdkafka</a>的封装。</p>
+<p>在<a rel="external" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/">上篇文章</a>中介绍的kfk就是基于它来实现的。</p>
+<h2 id="you-yi-si-de-kafka-xie-yi">有意思的 Kafka 协议</h2>
+<p>Kafka通信协议是挺有意思的，它基于自定义的二进制格式，在TCP的流上面，做了请求的多路复用。</p>
+<ul>
+<li>使用length prefix来编码请求的长度，然后是请求的二进制数据。</li>
+<li>使用correlation_id来关联请求和响应。</li>
+<li>使用握手协商版本来确定每类请求的版本。</li>
+<li>而编解码，又有一套flexible的编码格式， called "flexible encoding"。</li>
+<li>消息体的定义，又是提供基于json的定义，方便开发。</li>
+</ul>
+<p>不过，客户端和服务器的交互，需要客户端感知和处理的东西太多了，这点我不是很喜欢。</p>
+<h2 id="shi-xian">实现</h2>
+<p>在Rust的实现中，就是利用了json的消息定义，使用codegen的方式来生成消息体的struct。再利用Rust生成宏和trait来做编解码。</p>
+<p>根据分层的架构，</p>
+<ul>
+<li>Transport层，负责底层连接，TCP和TLS。</li>
+<li>Wire层，负责消息的编码解码。使用Tokio的Frame来实现。</li>
+<li>Application层，在协议交互之上，负责Consumer和Producer的逻辑。</li>
+</ul>
+<p>另外，提供了SASL协议验证，还有TLS通信。</p>
+<h2 id="xing-neng-bi-jiao">性能比较</h2>
+<blockquote>
+<p>就问你快不快，至于是否正确，你就不要管了。</p>
+</blockquote>
+<p>通过fork<a rel="external" href="https://github.com/fede1024/kafka-benchmark">rdkafka的benchmark</a>，加上kafka_client的benchmark，来对比性能。</p>
+<p>结果可以查看<a rel="external" href="https://zzzdong.github.io/kafka-benchmark/0.4.0_20260708/index.html">这里</a></p>
+<p>AI给出的结论：</p>
+<blockquote>
+<h3 id="1-kafka-client-quan-mian-ling-xian">1. kafka_client 全面领先</h3>
+<ul>
+<li>生产者平均提升 <strong>336.8%</strong></li>
+<li>消费者 Assign 模式平均提升 <strong>84.3%</strong></li>
+<li>消费者 Group 模式平均提升 <strong>33.6%</strong></li>
+</ul>
+<h3 id="2-xiao-xi-yue-xiao-you-shi-yue-ming-xian">2. 消息越小，优势越明显</h3>
+<ul>
+<li>小消息场景（10B）kafka_client 优化效果最显著</li>
+<li>大消息场景瓶颈在网络 IO，客户端实现差异不明显</li>
+</ul>
+<h3 id="3-assign-mo-shi-xing-neng-nian-ya-group">3. Assign 模式性能碾压 Group</h3>
+<ul>
+<li>Assign 比 Group 快几十到几百倍</li>
+<li>如无消费组语义需求，优先使用 Assign 模式</li>
+</ul>
+<h3 id="4-shu-ju-wan-zheng-xing-yan-zheng">4. 数据完整性验证</h3>
+<ul>
+<li>所有测试均通过消息计数、序列连续性、无重复验证</li>
+</ul>
+</blockquote>
+<h2 id="hu-shuo-ba-dao">胡说八道</h2>
+<p>Vibe code盛行的今日，给二流的程序员提供了机会，也可以展示自己的能力。也让我这些可以输出代码，污染环境。</p>
+<p>同时，Rust的特性，在AI agent中，好像更有利了一些，因为它的严格，以及性能。</p>
+
+  </div>
+</article>
+
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>

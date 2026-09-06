@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+  
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>liepress 0.2 发布：改了架构，加了图表 | zzzdong的自留地</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/blog/liepress-0-2/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="liepress 0.2 发布：改了架构，加了图表">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="liepress 0.2 发布：改了架构，加了图表">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/blog/liepress-0-2/">
+
+  <meta property="og:site_name" content="liepress 0.2 发布：改了架构，加了图表">
+  <meta property="og:locale" content="zh_CN">
+    <meta property="article:published_time" content="2026-09-06T21:00:00+08:00">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "url": "https://zzzdong.github.io/blog/liepress-0-2",
+      "name": "liepress 0.2 发布：改了架构，加了图表",
+      "description": "思绪飞扬，在这停留片刻",
+      "author": {
+        "@type": "Person",
+        "name": "zzzdong"
+      }
+    }
+    </script>
+
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<article class="page">
+  <div class="header-container">
+    <h2>liepress 0.2 发布：改了架构，加了图表</h2>
+    <div class="improve hide-on-mobiles">
+      
+<a href="https://github.com/zzzdong/zzzdong.github.io/edit/master/content/blog/liepress-0.2.md" title="Help improve page https://zzzdong.github.io/blog/liepress-0-2/">Improve this page</a>
+
+    </div>
+  </div>
+  <div class="page-info">
+    <time class="page-time smaller" datetime="2026-09-06T21:00:00+08:00">
+      Posted on September  6, 2026 at 21:00 CST
+    </time>
+  </div>
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>前阵子写的<a rel="external" href="https://github.com/zzzdong/liepress">liepress</a>，是把 markdown 转成 pdf 的小工具。最近给它发了 <a rel="external" href="https://crates.io/crates/liepress">0.2</a> 版本，改动不小：架构重做了一遍，还顺手把图表支持加上了。</p>
+<p>这篇文章就简单记一下，0.2 到底改了啥。</p>
+<h2 id="xin-ban-ben">新版本</h2>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.pdf</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.svg</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> svg</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.png</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> png</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.docx</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> docx</span></span></code></pre>
+<p>用法没什么变化，还是 <code>cargo install liepress</code> 就能装上。变化都在里面：</p>
+<ul>
+<li>架构改成了 <code>dom</code> → <code>ast</code> → <code>document</code> → 输出后端的分层。</li>
+<li>支持 <code>mermaid</code> 和 <code>liecharts</code> 代码块，可以画一些图。</li>
+<li>渲染基元统一到<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>，跟<a rel="external" href="https://crates.io/crates/liecharts">liecharts</a>、<a rel="external" href="https://crates.io/crates/liemermaid">liemermaid</a> 用同一套。</li>
+</ul>
+<h2 id="gai-jia-gou">改架构</h2>
+<p>0.1 的时候，基本就是「解析 markdown → 排版 → 画到 pdf」一条道走到黑，pdf 的逻辑和排版的逻辑搅在一起，想加个新的输出格式就很难受。</p>
+<p>于是参考了 <a rel="external" href="https://github.com/typst/typst">typst</a> 的思路——它是 markup 进来，先变成内容树，再排版成 frame，最后才交给导出后端。我也照着切了几层：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="plain"><span class="giallo-l"><span>输入 (.md / .html)</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   dom        HtmlElement 树 + CSS 级联（ResolvedStyle）</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   ast        简化的带样式 AST：Node / NodeKind / Style</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> enrich       外绘（mermaid/liecharts → 内嵌图片）+ 代码高亮</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> document     不分页的块树：Document / Block / TextLine</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>  output      pdf(krilla) / svg / png / html / docx</span></span></code></pre>
+<p>其中最重要的是一条：<strong>Document 不知道页（Document is page-agnostic）</strong>。</p>
+<p><code>Document</code> 是一棵不分页的块树，每个块带着已经解析好的样式；分页是各个输出后端自己的事。pdf 后端自己切页，svg/png 干脆不切，html 流式，docx 交给 Word 自己排。这样一份 <code>Document</code> 可以喂给所有后端，加新后端时也不用再抄一遍分页逻辑。</p>
+<p>另外，把「外绘」和「语法高亮」提到了 AST 的富化阶段（enrich），一次性做完，产物直接挂在 AST 节点上。这样 mermaid 图和着色后的代码，在 pdf/svg/png/html/docx 里都一样有——不然每个后端各画一遍，那才叫灾难。</p>
+<h2 id="tu-biao">图表</h2>
+<p>写文档总要画点图，于是加了两个渲染器，都是用代码块的语言标签来触发：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="markdown"><span class="giallo-l"><span>```mermaid</span></span>
+<span class="giallo-l"><span>flowchart TD</span></span>
+<span class="giallo-l"><span>    A[Start] --&gt; B{Check}</span></span>
+<span class="giallo-l"><span>    B -- yes --&gt; C[End]</span></span>
+<span class="giallo-l"><span>    B -- no --&gt; A</span></span>
+<span class="giallo-l"><span>```</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>```liecharts</span></span>
+<span class="giallo-l"><span>{&quot;title&quot;:{&quot;text&quot;:&quot;Sales&quot;},&quot;xAxis&quot;:[{&quot;type&quot;:&quot;category&quot;,&quot;data&quot;:[&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;]}],</span></span>
+<span class="giallo-l"><span>&quot;yAxis&quot;:[{&quot;type&quot;:&quot;value&quot;}],&quot;series&quot;:[{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:[120,200,150]}]}</span></span>
+<span class="giallo-l"><span>```</span></span></code></pre>
+<ul>
+<li><a rel="external" href="https://github.com/zzzdong/liemermaid">liemermaid</a>：纯 Rust 的 mermaid 解析+渲染，目前支持 flowchart、sequence、class、state、ER、pie、gitgraph、timeline。</li>
+<li><a rel="external" href="https://github.com/zzzdong/liecharts">liecharts</a>：受 ECharts 启发的图表库，配置是 ECharts 风格的 JSON，支持 line、bar、pie、area、scatter、radar、gauge、candlestick、boxplot、heatmap 等。</li>
+</ul>
+<p>两者都在 AST 富化阶段被渲染成内嵌的 PNG，就地替换成图片节点，所以五个输出后端都带图。渲染失败也不会炸，只是退化成原来的代码块，加一行注释。</p>
+<p>它们由 <code>charts</code> / <code>mermaid</code> 两个 feature 控制，默认都开着；不想要就 <code>--no-default-features</code>，编译会轻不少。</p>
+<h2 id="tong-yi-dao-lievisual">统一到 lievisual</h2>
+<p>最开始，liepress 里有一个简陋的 visual 系统，本来是从别的项目搬过来调试用的（可以输出 svg，方便我把分页结果丢给 AI 看）。后来写 liecharts、liemermaid 的时候，发现三边都在做同样的事情：几何、颜色、文本排版、画到 svg/png。</p>
+<p>干脆抽出来做成<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>：一份声明式的 <code>Scene</code> IR（图元 + 文本），底下挂不同的渲染后端（SVG、基于 <code>vello_cpu</code> 的 PNG 栅格化）。</p>
+<p>现在的分工就清爽了：</p>
+<ul>
+<li><code>liecharts</code> / <code>liemermaid</code> 只管把图和表算成 <code>Scene</code>。</li>
+<li><code>liepress</code> 的 svg/png 后端，则是把 <code>Document</code> 投影成 <code>Scene</code>（<code>document_to_scene</code>，全程 pt 坐标系，最后乘个 scale 归一到像素）。</li>
+<li>谁都不碰具体的 svg 字符串和像素缓冲。</li>
+</ul>
+<p>顺带的好处是，调试的时候输出一份 svg，肉眼能看，AI 也能读。</p>
+<h2 id="lai-shi-yi-shi">来试一试</h2>
+<p>还是老地方，有<a rel="external" href="https://zzzdong.github.io/liepress/">在线转换</a>可以玩，粘贴一段 markdown 就能出 pdf。图表的效果也可以在<a rel="external" href="https://zzzdong.github.io/liecharts/">liecharts</a>和<a rel="external" href="https://zzzdong.github.io/liemermaid/">liemermaid</a>的在线 demo 里先看一眼。</p>
+<p>目前支持的 markdown 语法仍然有限，字体、分页、表格这些也还有不少毛病。不过我自己写写中文文档、导个 pdf，是够用了。</p>
+<h2 id="hou-hua">后话</h2>
+<p>这次重构，基本是 AI 干的活。我只负责提想法、看结果、说「不对，重来」。</p>
+<p>typst 那一刀切得确实漂亮，抄它的思路改完之后，代码顺眼了很多，加后端也不再是噩梦——当然，也可能只是我又一次自我感觉良好。</p>
+<p>至于要不要继续往上加功能（更多 CSS、更多图表类型、更好的字体处理），就留给下一个版本吧。</p>
+<hr />
+<p>PS.</p>
+<ul>
+<li>
+<p>liepress、liecharts、liemermaid、lievisual 是一套，改一个另外几个就得跟着动，版本号一起升，有点累。</p>
+</li>
+<li>
+<p>这些代码绝大部分是 AI 写的。</p>
+</li>
+<li>
+<p>mermaid 的兼容性还在追，跟官方的 mermaid-cli 比，只能说「结构差不多」，像素级还差得远。</p>
+</li>
+</ul>
+
+  </div>
+</article>
+
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>

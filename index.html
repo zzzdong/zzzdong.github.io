@@ -1,0 +1,421 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>zzzdong的自留地 | 思绪飞扬，在这停留片刻</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="zzzdong的自留地">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="zzzdong的自留地">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/">
+
+  <meta property="og:site_name" content="zzzdong的自留地">
+  <meta property="og:locale" content="zh_CN">
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://zzzdong.github.io",
+    "name": "zzzdong的自留地",
+    "description": "思绪飞扬，在这停留片刻",
+    "image": "https://zzzdong.github.io",
+    "author": {
+      "@type": "Person",
+      "name": "zzzdong",
+      "url": "https://zzzdong.github.io/about",
+      "sameAs": [
+      ]
+    }
+  }
+</script>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<div class="pages">
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/liepress-0-2/">liepress 0.2 发布：改了架构，加了图表</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-09-06T21:00:00+08:00">
+      Posted on September  6, 2026 at 21:00 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>前阵子写的<a rel="external" href="https://github.com/zzzdong/liepress">liepress</a>，是把 markdown 转成 pdf 的小工具。最近给它发了 <a rel="external" href="https://crates.io/crates/liepress">0.2</a> 版本，改动不小：架构重做了一遍，还顺手把图表支持加上了。</p>
+<p>这篇文章就简单记一下，0.2 到底改了啥。</p>
+<h2 id="xin-ban-ben">新版本</h2>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.pdf</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.svg</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> svg</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.png</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> png</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.docx</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> docx</span></span></code></pre>
+<p>用法没什么变化，还是 <code>cargo install liepress</code> 就能装上。变化都在里面：</p>
+<ul>
+<li>架构改成了 <code>dom</code> → <code>ast</code> → <code>document</code> → 输出后端的分层。</li>
+<li>支持 <code>mermaid</code> 和 <code>liecharts</code> 代码块，可以画一些图。</li>
+<li>渲染基元统一到<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>，跟<a rel="external" href="https://crates.io/crates/liecharts">liecharts</a>、<a rel="external" href="https://crates.io/crates/liemermaid">liemermaid</a> 用同一套。</li>
+</ul>
+<h2 id="gai-jia-gou">改架构</h2>
+<p>0.1 的时候，基本就是「解析 markdown → 排版 → 画到 pdf」一条道走到黑，pdf 的逻辑和排版的逻辑搅在一起，想加个新的输出格式就很难受。</p>
+<p>于是参考了 <a rel="external" href="https://github.com/typst/typst">typst</a> 的思路——它是 markup 进来，先变成内容树，再排版成 frame，最后才交给导出后端。我也照着切了几层：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="plain"><span class="giallo-l"><span>输入 (.md / .html)</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   dom        HtmlElement 树 + CSS 级联（ResolvedStyle）</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   ast        简化的带样式 AST：Node / NodeKind / Style</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> enrich       外绘（mermaid/liecharts → 内嵌图片）+ 代码高亮</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> document     不分页的块树：Document / Block / TextLine</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>  output      pdf(krilla) / svg / png / html / docx</span></span></code></pre>
+<p>其中最重要的是一条：<strong>Document 不知道页（Document is page-agnostic）</strong>。</p>
+<p><code>Document</code> 是一棵不分页的块树，每个块带着已经解析好的样式；分页是各个输出后端自己的事。pdf 后端自己切页，svg/png 干脆不切，html 流式，docx 交给 Word 自己排。这样一份 <code>Document</code> 可以喂给所有后端，加新后端时也不用再抄一遍分页逻辑。</p>
+<p>另外，把「外绘」和「语法高亮」提到了 AST 的富化阶段（enrich），一次性做完，产物直接挂在 AST 节点上。这样 mermaid 图和着色后的代码，在 pdf/svg/png/html/docx 里都一样有——不然每个后端各画一遍，那才叫灾难。</p>
+<h2 id="tu-biao">图表</h2>
+<p>写文档总要画点图，于是加了两个渲染器，都是用代码块的语言标签来触发：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="markdown"><span class="giallo-l"><span>```mermaid</span></span>
+<span class="giallo-l"><span>flowchart TD</span></span>
+<span class="giallo-l"><span>    A[Start] --&gt; B{Check}</span></span>
+<span class="giallo-l"><span>    B -- yes --&gt; C[End]</span></span>
+<span class="giallo-l"><span>    B -- no --&gt; A</span></span>
+<span class="giallo-l"><span>```</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>```liecharts</span></span>
+<span class="giallo-l"><span>{&quot;title&quot;:{&quot;text&quot;:&quot;Sales&quot;},&quot;xAxis&quot;:[{&quot;type&quot;:&quot;category&quot;,&quot;data&quot;:[&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;]}],</span></span>
+<span class="giallo-l"><span>&quot;yAxis&quot;:[{&quot;type&quot;:&quot;value&quot;}],&quot;series&quot;:[{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:[120,200,150]}]}</span></span>
+<span class="giallo-l"><span>```</span></span></code></pre>
+<ul>
+<li><a rel="external" href="https://github.com/zzzdong/liemermaid">liemermaid</a>：纯 Rust 的 mermaid 解析+渲染，目前支持 flowchart、sequence、class、state、ER、pie、gitgraph、timeline。</li>
+<li><a rel="external" href="https://github.com/zzzdong/liecharts">liecharts</a>：受 ECharts 启发的图表库，配置是 ECharts 风格的 JSON，支持 line、bar、pie、area、scatter、radar、gauge、candlestick、boxplot、heatmap 等。</li>
+</ul>
+<p>两者都在 AST 富化阶段被渲染成内嵌的 PNG，就地替换成图片节点，所以五个输出后端都带图。渲染失败也不会炸，只是退化成原来的代码块，加一行注释。</p>
+<p>它们由 <code>charts</code> / <code>mermaid</code> 两个 feature 控制，默认都开着；不想要就 <code>--no-default-features</code>，编译会轻不少。</p>
+<h2 id="tong-yi-dao-lievisual">统一到 lievisual</h2>
+<p>最开始，liepress 里有一个简陋的 visual 系统，本来是从别的项目搬过来调试用的（可以输出 svg，方便我把分页结果丢给 AI 看）。后来写 liecharts、liemermaid 的时候，发现三边都在做同样的事情：几何、颜色、文本排版、画到 svg/png。</p>
+<p>干脆抽出来做成<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>：一份声明式的 <code>Scene</code> IR（图元 + 文本），底下挂不同的渲染后端（SVG、基于 <code>vello_cpu</code> 的 PNG 栅格化）。</p>
+<p>现在的分工就清爽了：</p>
+<ul>
+<li><code>liecharts</code> / <code>liemermaid</code> 只管把图和表算成 <code>Scene</code>。</li>
+<li><code>liepress</code> 的 svg/png 后端，则是把 <code>Document</code> 投影成 <code>Scene</code>（<code>document_to_scene</code>，全程 pt 坐标系，最后乘个 scale 归一到像素）。</li>
+<li>谁都不碰具体的 svg 字符串和像素缓冲。</li>
+</ul>
+<p>顺带的好处是，调试的时候输出一份 svg，肉眼能看，AI 也能读。</p>
+<h2 id="lai-shi-yi-shi">来试一试</h2>
+<p>还是老地方，有<a rel="external" href="https://zzzdong.github.io/liepress/">在线转换</a>可以玩，粘贴一段 markdown 就能出 pdf。图表的效果也可以在<a rel="external" href="https://zzzdong.github.io/liecharts/">liecharts</a>和<a rel="external" href="https://zzzdong.github.io/liemermaid/">liemermaid</a>的在线 demo 里先看一眼。</p>
+<p>目前支持的 markdown 语法仍然有限，字体、分页、表格这些也还有不少毛病。不过我自己写写中文文档、导个 pdf，是够用了。</p>
+<h2 id="hou-hua">后话</h2>
+<p>这次重构，基本是 AI 干的活。我只负责提想法、看结果、说「不对，重来」。</p>
+<p>typst 那一刀切得确实漂亮，抄它的思路改完之后，代码顺眼了很多，加后端也不再是噩梦——当然，也可能只是我又一次自我感觉良好。</p>
+<p>至于要不要继续往上加功能（更多 CSS、更多图表类型、更好的字体处理），就留给下一个版本吧。</p>
+<hr />
+<p>PS.</p>
+<ul>
+<li>
+<p>liepress、liecharts、liemermaid、lievisual 是一套，改一个另外几个就得跟着动，版本号一起升，有点累。</p>
+</li>
+<li>
+<p>这些代码绝大部分是 AI 写的。</p>
+</li>
+<li>
+<p>mermaid 的兼容性还在追，跟官方的 mermaid-cli 比，只能说「结构差不多」，像素级还差得远。</p>
+</li>
+</ul>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/kafka-client-support-kerberos/">kafka_client支持GSSAPI认证啦</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-17T18:00:00+08:00">
+      Posted on July 17, 2026 at 18:00 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <blockquote>
+<p>AI预警！Rust预警！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>在<a rel="external" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">上一篇文章中</a>不是介绍了纯 Rust 实现的 <a rel="external" href="https://crates.io/crates/kafka_client">kafka_client</a> 库么，有个小伙伴还去看了，并提了个<a rel="external" href="https://github.com/zzzdong/kafka_client/issues/1">issue</a>，说是没有支持 Kerberos 认证。</p>
+<p>既然有人要，那我就写一个吧。</p>
+<h2 id="shi-xian">实现</h2>
+<p>同样的，纯 Rust 是我们的追求，所以，在查找了一轮后，我又开始准备自己手撸了。</p>
+<p>同样的起手式，先AI对话问一下认证的流程和原理。依然是看着头疼，不管了，直接让它实现吧。在它干活的时候，自己找找文章看看 Kerberos 是怎样的。</p>
+<p>在经过各种磨难后，终于在 0.5.0 版本中，支持了 Kerberos 认证。</p>
+<p>项目的实现，采用 Rust-Crypto 的各种密码学库来实现各种算法。</p>
+<h2 id="mo-nan">磨难</h2>
+<p>这种功能的添加，最重要，就是先把集成测试先搭建起来。然后就可以让 AI 干活了。</p>
+<p>中间也是遇到了不少问题，比如：</p>
+<ul>
+<li>连接 KDC 获取 service ticket 失败，原因是 service principal 里 hostname 不一致————连接用 127.0.0.1 但 KDC 里注册的是 localhost。</li>
+<li>好不容易获取到service ticket，client构建认证数据格式不对，导致一直认证失败。</li>
+</ul>
+<p>反正我看着AI在修，也是感到头秃，在不断修，偶尔进入死胡同。修复时除了 CodeBuddy 上的 DeepSeek 和 HY3，也用 QWen 和 Kimi 来交叉代码审计。最后下载了不少RFC供AI阅读对照实现，终于跑通了。</p>
+<h2 id="si-xu-luan-fei">思绪乱飞</h2>
+<p>Kerberos 认证的支持是比较有意义的，在一些企业应用中，可能就是需要。</p>
+<p>在我看来，Kerberos 认证，就是引入一个第三方的认证中心，来验证用户的身份。客户端先去 kdc 获取 ticket，然后去 broker 拿到后，它再去 kdc 验证 ticket 的有效性。这样通过后，就完成认证了。</p>
+<p>还有就是对于这些比较复杂的认证机制，它们一般都是有规范和标准的，在实现时，第一步就是要先下载好 RFC 文档，让 AI 对照规范去实现。同时这些涉及密码学的算法，它们的规范可能有一些测试数据，可以使用它们构建测试用例来保证代码的健壮性。</p>
+<h2 id="hu-shuo-ba-dao">胡说八道</h2>
+<p>目前的LLM，知识广度和深度都是比很多人要强，但是在特定领域的，还是要依赖外部的资料，比如这次的RFC。所以写一些严格算法、实现时，可以考虑下载相关规范、文档给它。</p>
+<p>当前的实现，只是通过了一个简易的集成测试，在生产环境中，还需要进一步的测试和验证。</p>
+<blockquote>
+<p>你都路过了，顺手<a rel="external" href="https://github.com/zzzdong/kafka_client/">给个星星嘛~</a></p>
+</blockquote>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-07T21:18:00+08:00">
+      Posted on July  7, 2026 at 21:18 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <blockquote>
+<p>AI预警！Rust预警！胡说八道警告！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>我用vibe code的方式开发了一个纯Rust实现的<a rel="external" href="https://github.com/zzzdong/kafka_client">Kafka客户端</a>，性能还不错。在<a rel="external" href="https://github.com/zzzdong/kafka-benchmark">测试</a>中，发现比Rust包装的<a rel="external" href="https://crates.io/crates/rdkafka/0.39.0">rdkafka</a>还快了一些————它是C库<a rel="external" href="https://github.com/confluentinc/librdkafka">librdkafka</a>的封装。</p>
+<p>在<a rel="external" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/">上篇文章</a>中介绍的kfk就是基于它来实现的。</p>
+<h2 id="you-yi-si-de-kafka-xie-yi">有意思的 Kafka 协议</h2>
+<p>Kafka通信协议是挺有意思的，它基于自定义的二进制格式，在TCP的流上面，做了请求的多路复用。</p>
+<ul>
+<li>使用length prefix来编码请求的长度，然后是请求的二进制数据。</li>
+<li>使用correlation_id来关联请求和响应。</li>
+<li>使用握手协商版本来确定每类请求的版本。</li>
+<li>而编解码，又有一套flexible的编码格式， called "flexible encoding"。</li>
+<li>消息体的定义，又是提供基于json的定义，方便开发。</li>
+</ul>
+<p>不过，客户端和服务器的交互，需要客户端感知和处理的东西太多了，这点我不是很喜欢。</p>
+<h2 id="shi-xian">实现</h2>
+<p>在Rust的实现中，就是利用了json的消息定义，使用codegen的方式来生成消息体的struct。再利用Rust生成宏和trait来做编解码。</p>
+<p>根据分层的架构，</p>
+<ul>
+<li>Transport层，负责底层连接，TCP和TLS。</li>
+<li>Wire层，负责消息的编码解码。使用Tokio的Frame来实现。</li>
+<li>Application层，在协议交互之上，负责Consumer和Producer的逻辑。</li>
+</ul>
+<p>另外，提供了SASL协议验证，还有TLS通信。</p>
+<h2 id="xing-neng-bi-jiao">性能比较</h2>
+<blockquote>
+<p>就问你快不快，至于是否正确，你就不要管了。</p>
+</blockquote>
+<p>通过fork<a rel="external" href="https://github.com/fede1024/kafka-benchmark">rdkafka的benchmark</a>，加上kafka_client的benchmark，来对比性能。</p>
+<p>结果可以查看<a rel="external" href="https://zzzdong.github.io/kafka-benchmark/0.4.0_20260708/index.html">这里</a></p>
+<p>AI给出的结论：</p>
+<blockquote>
+<h3 id="1-kafka-client-quan-mian-ling-xian">1. kafka_client 全面领先</h3>
+<ul>
+<li>生产者平均提升 <strong>336.8%</strong></li>
+<li>消费者 Assign 模式平均提升 <strong>84.3%</strong></li>
+<li>消费者 Group 模式平均提升 <strong>33.6%</strong></li>
+</ul>
+<h3 id="2-xiao-xi-yue-xiao-you-shi-yue-ming-xian">2. 消息越小，优势越明显</h3>
+<ul>
+<li>小消息场景（10B）kafka_client 优化效果最显著</li>
+<li>大消息场景瓶颈在网络 IO，客户端实现差异不明显</li>
+</ul>
+<h3 id="3-assign-mo-shi-xing-neng-nian-ya-group">3. Assign 模式性能碾压 Group</h3>
+<ul>
+<li>Assign 比 Group 快几十到几百倍</li>
+<li>如无消费组语义需求，优先使用 Assign 模式</li>
+</ul>
+<h3 id="4-shu-ju-wan-zheng-xing-yan-zheng">4. 数据完整性验证</h3>
+<ul>
+<li>所有测试均通过消息计数、序列连续性、无重复验证</li>
+</ul>
+</blockquote>
+<h2 id="hu-shuo-ba-dao">胡说八道</h2>
+<p>Vibe code盛行的今日，给二流的程序员提供了机会，也可以展示自己的能力。也让我这些可以输出代码，污染环境。</p>
+<p>同时，Rust的特性，在AI agent中，好像更有利了一些，因为它的严格，以及性能。</p>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/">我用 Rust 写了个 Kafka 命令行工具和 Rust 客户端</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-01T22:14:19+08:00">
+      Posted on July  1, 2026 at 22:14 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>近来我用rust写了一些小工具，比如这个<a rel="external" href="https://github.com/zzzdong/kfk">kfk</a>工具，来帮助我管理kafka集群。</p>
+<h2 id="gong-neng">功能</h2>
+<p>它是Rust实现，可以musl编译成静态二进制文件，没有外部依赖。可以自由在大部分的Linux上运行。</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">kfk</span><span style="color: #569CD6;"> --help</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">A</span><span style="color: #CE9178;"> pure Rust Kafka CLI tool for cluster management, topic operations, and message produce/consume</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">Usage:</span><span style="color: #CE9178;"> kfk</span><span> [OPTIONS] &lt;COMMAND&gt;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">Commands:</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  config</span><span style="color: #CE9178;">      Cluster configuration management</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  configs</span><span style="color: #CE9178;">     List all configured clusters</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  node</span><span style="color: #CE9178;">        Cluster node operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  nodes</span><span style="color: #CE9178;">       List all brokers</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  topic</span><span style="color: #CE9178;">       Topic operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  topics</span><span style="color: #CE9178;">      List all topics</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  produce</span><span style="color: #CE9178;">     Produce messages to a topic</span><span> (reads</span><span style="color: #CE9178;"> from stdin</span><span>)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  consume</span><span style="color: #CE9178;">     Consume messages from a topic</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  group</span><span style="color: #CE9178;">       Consumer group operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  groups</span><span style="color: #CE9178;">      List all consumer groups</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  completion</span><span style="color: #CE9178;">  Generate shell completion script</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  help</span><span style="color: #CE9178;">        Print this message or the help of the given subcommand</span><span>(</span><span style="color: #DCDCAA;">s</span><span>)</span></span></code></pre>
+<p>提供常见的基本操作，在简易操作Kafka集群时，可以使用这个工具。比如: 测试集群是否正常，消费消息来调试等。</p>
+<p>欢迎各位使用，可以从<a rel="external" href="https://github.com/zzzdong/kfk/releases/">github</a>下载，我打包了Linux上的可执行文件。</p>
+<h2 id="yi-dian-gu-shi">一点故事</h2>
+<p>一开始，并没有想到写这个工具，初衷是我想要一个Rust的可以方便编译的Kafka客户端，来连接Kafka集群做消息的生产者和消费者。</p>
+<p>当前Rust生态中，推荐的是<a rel="external" href="https://crates.io/crates/rdkafka">rdkafka</a>，它是对librdkafka的Rust绑定。当我尝试使用rdkafka时，想做musl编译，但是遇到了一些问题，它依赖于openssl库————出名的难以交叉编译。</p>
+<p>在看到了一些其他的Rust Kafka客户端，比如<a rel="external" href="https://crates.io/crates/kafka">kafka</a>，它是一个纯Rust实现的Kafka客户端，没有依赖于任何外部库。但是它居然不支持SASL验证。</p>
+<p>既然这样，不如我自己实现一个吧。</p>
+<p>在AI的帮助下，磨了不少的时间，断断续续，终于实现了<a rel="external" href="https://github.com/zzzdong/kafka_client">kafka_client</a>。</p>
+<p>它是一个纯Rust实现的Kafka客户端，没有依赖于任何外部库。它支持SASL验证和TLS连接。虽然它的间接依赖库如rustls和zstd是需要编译C，但是在kfk编译验证发现不用额外的操作，只要有musl工具链就可以编译成功。</p>
+<h2 id="yi-xie-hu-si-luan-xiang">一些胡思乱想</h2>
+<p>在现在的AI盛行时代，很多时候，只需要一些想法，加以AI的辅助，就可以完成不错的结果。比如kfk这个命令行工具，差不多就是全部都是AI编写的，kafka_client也是大量的使用AI的辅助。</p>
+<p>那么，程序员的价值在哪里？是不是古法编程这些技术就要被废弃了？另外程序员应该面对AI？</p>
+<p>前不久，公司来了个实习生，在他口中，全部都直接给AI就可以了。对此我有些异议的。当前，全部依赖于AI，还是有些欠缺，可能是目前的AI技术还不够成熟，总感觉做得不够好。也可能是我自己想多了吧。</p>
+<p>另外，能看到的是，在AI的冲击下，程序员的角色正在发生改变。而且，新入门越来越难了，因为AI已经比很多初级程序员更专业了。像我，感觉自己就是一个AI的人形agent，做着一些AI在电脑上暂时无法完成的任务，遇到问题，就是无脑问AI。</p>
+<hr />
+<p>PS. Kafka自带的命令行真是难用的，我每次都要去查文档，而且它的引用config文件的参数还是不统一的。</p>
+<p>PS. Go写的<a rel="external" href="https://github.com/birdayz/kaf">kaf</a>命令行工具挺不错的，kfk受了它的启发。</p>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/hello-liepress/">Hello, liepress</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-06-09T18:00:00+08:00">
+      Posted on June  9, 2026 at 18:00 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <h2 id="yuan-qi">缘起</h2>
+<p>偷懒了很久，一直在瞎搞着，写写<code>Rust</code>，看看新闻，上班摸鱼。</p>
+<p>最近，看到有个项目<a rel="external" href="https://github.com/gastongouron/ironpress">ironpress</a>，看它说的纯<code>Rust</code>实现了把markdown转换为pdf，很诱人呢，就试了下，结果在中文+英文时，就遇到出现了奇怪的乱码的情况。</p>
+<p>尝试了clone下来，想调试一把，才发现根本搞不动，还是技术太菜了。</p>
+<p>再想到，反正有AI帮忙嘛，就自己尝试撸一把，写个小工具，就有了这个项目<a rel="external" href="https://github.com/zzzdong/liepress">liepress</a>。</p>
+<h2 id="fa-zhan">发展</h2>
+<p>liepress的目标只是简单的把markdown转换为pdf，所以它的架构就能简单了。</p>
+<ol>
+<li>
+<p>首先找个库来解析markdown到AST。</p>
+</li>
+<li>
+<p>再遍历AST，进行布局以及分页，生成视觉元素。</p>
+</li>
+<li>
+<p>最后，把视觉元素渲染到pdf。</p>
+</li>
+</ol>
+<p>基本一切都是站在巨人的肩膀上，拿来主义。</p>
+<p>其中，个人觉得关键的就是：</p>
+<ul>
+<li>
+<p><a rel="external" href="https://crates.io/crates/parley">parley</a> 来做好文本排版，它类似C生态中的pango吧，layout文本，得到每一行的数据，然后根据需要切割、分页等。</p>
+</li>
+<li>
+<p><a rel="external" href="https://crates.io/crates/krilla">krilla</a> 来实现pdf渲染，它提供很便捷的接口来，可以类似绘图的方式来渲染元素到pdf中。它还自带字体裁剪，我严重怀疑ironpress的字体问题就是字体嵌入有问题导致的。</p>
+</li>
+</ul>
+<p>另外一点有意思的是，你可以看到：</p>
+<p>它里面的有个visual系统，简易的分层，然后就有一个渲染器，使用不同的后端来渲染，目前支持<code>pdf</code>、<code>svg</code>和<code>png</code>。这里其实是从其他项目拿过来的，主要是想可以输出svg调试，让AI读取到分页的结果。</p>
+<h2 id="lai-shi-yi-shi">来试一试</h2>
+<p>现在，可以访问<a rel="external" href="https://zzzdong.github.io/liepress/">在线转换</a>来试一试效果。</p>
+<p>虽然，目前还是只能支持一些简单的markdown语法，而且没有经过什么测试，但是，在自己用的简易中文markdown，还是挺让我自己满意的。</p>
+<h2 id="hou-hua">后话</h2>
+<p>ironpress中的markdown到html，再到pdf的流程，还是挺清晰的，我看看要不要参照一下，抄个类似的。</p>
+<hr />
+<p>PS.</p>
+<ul>
+<li>
+<p>liepress的实现，可以说绝大部分是AI写的，感激<a rel="external" href="https://www.trae.cn/">TRAE</a>，让我白嫖。当然也少不了DeepSeek的帮助，遇到难问题，还是找他来解决不少。</p>
+</li>
+<li>
+<p>现在AI盛行了，我这半桶水，代码写不动，不知如何是好了。</p>
+</li>
+<li>
+<p>下一次可能很快见，再分享一个小玩意项目。</p>
+</li>
+</ul>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+</div>
+<div class="pagination">
+  <span class="previous-page">&lt;-- Previous</span>
+  <a href="https://zzzdong.github.io/page/2/" class="next-page">Next --&gt;</a>
+</div>
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>

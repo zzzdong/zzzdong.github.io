@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+  
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>搭建Rust的Windows GNU开发环境 | zzzdong的自留地</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/blog/rust-windows-gnu-env/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="搭建Rust的Windows GNU开发环境">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="搭建Rust的Windows GNU开发环境">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/blog/rust-windows-gnu-env/">
+
+  <meta property="og:site_name" content="搭建Rust的Windows GNU开发环境">
+  <meta property="og:locale" content="zh_CN">
+    <meta property="article:published_time" content="2025-04-14T10:41:51+08:00">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "url": "https://zzzdong.github.io/blog/rust-windows-gnu-env",
+      "name": "搭建Rust的Windows GNU开发环境",
+      "description": "思绪飞扬，在这停留片刻",
+      "author": {
+        "@type": "Person",
+        "name": "zzzdong"
+      }
+    }
+    </script>
+
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<article class="page">
+  <div class="header-container">
+    <h2>搭建Rust的Windows GNU开发环境</h2>
+    <div class="improve hide-on-mobiles">
+      
+<a href="https://github.com/zzzdong/zzzdong.github.io/edit/master/content/blog/rust-windows-gnu-env.md" title="Help improve page https://zzzdong.github.io/blog/rust-windows-gnu-env/">Improve this page</a>
+
+    </div>
+  </div>
+  <div class="page-info">
+    <time class="page-time smaller" datetime="2025-04-14T10:41:51+08:00">
+      Posted on April 14, 2025 at 10:41 CST
+    </time>
+  </div>
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>在Windows上，使用Rust开发时，官方是推荐MSVC的环境，但是MSVC环境需要VS，或者至少Microsoft C++ 生成工具。这里需要注意的一点，就是它们的许可问题，在我们常用的Community版本中，是有比较多的限制的，它要求在开源项目，或者是非企业环境中。</p>
+<p>这时，gnu版本是一个不错的选择，它相对没有那么多的约束。</p>
+<p>只不过它的安装会有些麻烦。</p>
+<h2 id="an-zhuang-gnuhuan-jing">安装gnu环境</h2>
+<ol>
+<li>通过rustup安装rustc。</li>
+</ol>
+<p>下载 https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe ，双击安装。使用直接回车默认配置安装即可。</p>
+<p>当已有的rustup的时候，可以：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="plain"><span class="giallo-l"><span>rustup toolchain install stable-x86_64-pc-windows-gnu</span></span>
+<span class="giallo-l"><span>rustup default stable-x86_64-pc-windows-gnu</span></span></code></pre>
+<ol start="2">
+<li>安装mingw-w64开发工具。</li>
+</ol>
+<p>根据 https://www.mingw-w64.org/downloads/#w64devkit 的说明，<a rel="external" href="https://github.com/skeeto/w64devkit/releases">下载</a>安装w64devkit开发工具。</p>
+<p>下载后，运行exe，选择一个目录解压安装。</p>
+<p>配置环境变量，把上面的安装目录的bin目录添加到PATH中。</p>
+<ol start="3">
+<li>修正w64devkit的兼容性问题。</li>
+</ol>
+<p>上面安装后，运行cargo build可能会报错，出现<code>ld.exe: cannot find -lgcc_eh</code>相似的错误。这时，需要手动修正一下。</p>
+<p>生成一个空的<code>libgcc_eh.a</code>文件。</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">cd</span><span style="color: #CE9178;"> w64devkit/x86_64-w64-mingw32/lib</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">ar</span><span style="color: #CE9178;"> rcs libgcc_eh.a</span></span></code></pre><h2 id="can-kao-zi-liao">参考资料</h2>
+<ol>
+<li>https://github.com/stacks-network/stacks-core/pull/5937#issuecomment-2747629024</li>
+</ol>
+
+  </div>
+</article>
+
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>
