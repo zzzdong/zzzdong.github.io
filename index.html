@@ -1,0 +1,579 @@
+<!DOCTYPE html><html lang="zh-CN" xml:lang="zh-CN">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link rel="shortcut icon" type="image/png" sizes="32x32" href="https://zzzdong.github.io/favicon-32x32.png">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="https://zzzdong.github.io/atom.xml">
+<link rel="stylesheet" href="https://zzzdong.github.io/main.css">
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+
+  
+<meta name="robots" content="index, follow">
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<title>zzzdong的自留地 | 思绪飞扬，在这停留片刻</title>
+<meta name="generator" content="Zola">
+<meta name="description" content="思绪飞扬，在这停留片刻">
+<meta name="author" content="zzzdong">
+<link rel="canonical" href="https://zzzdong.github.io/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="zzzdong的自留地">
+  <meta name="twitter:description" content="思绪飞扬，在这停留片刻">
+  
+  <meta property="og:title" content="zzzdong的自留地">
+  <meta property="og:description" content="思绪飞扬，在这停留片刻">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zzzdong.github.io/">
+
+  <meta property="og:site_name" content="zzzdong的自留地">
+  <meta property="og:locale" content="zh_CN">
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://zzzdong.github.io",
+    "name": "zzzdong的自留地",
+    "description": "思绪飞扬，在这停留片刻",
+    "image": "https://zzzdong.github.io",
+    "author": {
+      "@type": "Person",
+      "name": "zzzdong",
+      "url": "https://zzzdong.github.io/about",
+      "sameAs": [
+      ]
+    }
+  }
+</script>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <a id="a-title" href="https://zzzdong.github.io">
+        <h1>zzzdong的自留地</h1>
+      </a>
+      <h2>思绪飞扬，在这停留片刻</h2>
+      <nav id="navbar">
+  <a href="https://zzzdong.github.io/blog" class="btn">Blog</a>
+  <a href="https://github.com/zzzdong" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+</nav>
+</div>
+  </header>
+
+  <div class="container">
+    <main>
+<div class="pages">
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/llm-and-agent-notes/">LLM、Agent二三事</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-09-18T22:20:00+08:00">
+      Posted on September 18, 2026 at 22:20 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <blockquote>
+<p>AI预警！昇腾预警！胡说八道警告！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>近来折腾了两件事。</p>
+<p>一件是在一台昇腾 910B4 服务器上（单机双卡）把本地大模型跑起来，另一件是拿它去搭一个 agent。两件事都不算特别成功，也不算失败，就是过程挺有意思，记一记。</p>
+<h2 id="yi-xian-ba-mo-xing-pao-qi-lai">一、先把模型跑起来</h2>
+<h3 id="ying-jian-yu-huan-jing">硬件与环境</h3>
+<p>手上的资源不多，就一台服务器，插了两张 910B4，每张 32G，加起来 64G 的显存。听起来挺充裕，实际上要开长上下文、还要留 KV cache 的空间，就得精打细算了。</p>
+<ul>
+<li>部署形态：单服务器、双卡</li>
+<li>卡：昇腾 910B4 32G × 2</li>
+<li>推理框架：<a rel="external" href="https://github.com/vllm-project/vllm-ascend">vllm-ascend</a>（镜像 <code>quay.io/ascend/vllm-ascend:v0.23.0</code>）</li>
+<li>模型：Qwen3.8-27B-w8a8</li>
+<li>部署方式：docker compose，容器直接用 host 网络</li>
+</ul>
+<h3 id="bu-shu-pei-zhi">部署配置</h3>
+<p>直接上 compose 文件，这份是我现在正在跑的：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="yaml"><span class="giallo-l"><span style="color: #569CD6;">services</span><span>:</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">  vllm-ascend</span><span>:</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    image</span><span>:</span><span style="color: #CE9178;"> quay.io/ascend/vllm-ascend:v0.23.0</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    container_name</span><span>:</span><span style="color: #CE9178;"> vllm-ascend-qwen3.8</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    restart</span><span>:</span><span style="color: #CE9178;"> unless-stopped</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #6A9955;">    # host 网络模式（HCCL 多卡通信必需）</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    network_mode</span><span>:</span><span style="color: #CE9178;"> host</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #6A9955;">    # 共享内存 1GB（文档推荐值）</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    shm_size</span><span>:</span><span style="color: #CE9178;"> 1g</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #6A9955;">    # NPU 设备映射</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    devices</span><span>:</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /dev/davinci2</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /dev/davinci3</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /dev/davinci_manager</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /dev/devmm_svm</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /dev/hisi_hdc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    volumes</span><span>:</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /usr/local/dcmi:/usr/local/dcmi:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /usr/local/Ascend/driver/tools/hccn_tool:/usr/local/Ascend/driver/tools/hccn_tool:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /usr/local/bin/npu-smi:/usr/local/bin/npu-smi:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /usr/local/Ascend/driver/lib64/:/usr/local/Ascend/driver/lib64/:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /usr/local/Ascend/driver/version.info:/usr/local/Ascend/driver/version.info:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /etc/ascend_install.info:/etc/ascend_install.info:ro</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> /root/.cache:/root/.cache</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> ./Qwen3.8-27B-w8a8:/root/Qwen3.8-27B-w8a8</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    environment</span><span>:</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> VLLM_USE_MODELSCOPE=False</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> PYTORCH_NPU_ALLOC_CONF=expandable_segments:True</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> HCCL_BUFFSIZE=1024</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> TASK_QUEUE_ENABLE=1</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> OMP_PROC_BIND=false</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> OMP_NUM_THREADS=4</span></span>
+<span class="giallo-l"><span>      -</span><span style="color: #CE9178;"> VLLM_API_KEY=xxxx</span></span>
+<span class="giallo-l"><span style="color: #6A9955;">    # 启动命令（基于文档 Qwen3.5-27B-w8a8 部署脚本）</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">    command</span><span>:</span><span style="color: #C586C0;"> &gt;</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      vllm serve /root/Qwen3.8-27B-w8a8</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --host 0.0.0.0</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --port 8000</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --data-parallel-size 1</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --tensor-parallel-size 2</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --quantization ascend</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --served-model-name qwen3.8</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --block-size 128</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --max-num-seqs 16</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --max-model-len 131072</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --max-num-batched-tokens 16384</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --trust-remote-code</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --enable-prefix-caching</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --gpu-memory-utilization 0.90</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --speculative_config &#39;{&quot;method&quot;: &quot;mtp&quot;, &quot;num_speculative_tokens&quot;: 3, &quot;enforce_eager&quot;: true}&#39;</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --compilation-config &#39;{&quot;cudagraph_mode&quot;:&quot;FULL_DECODE_ONLY&quot;}&#39;</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --additional-config &#39;{&quot;enable_cpu_binding&quot;:true}&#39;</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --reasoning-parser qwen3</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --enable-auto-tool-choice</span></span>
+<span class="giallo-l"><span style="color: #CE9178;">      --tool-call-parser qwen3_coder</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #569CD6;">    healthcheck</span><span>:</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">      test</span><span>: [</span><span style="color: #CE9178;">&quot;CMD&quot;</span><span>,</span><span style="color: #CE9178;"> &quot;curl&quot;</span><span>,</span><span style="color: #CE9178;"> &quot;-f&quot;</span><span>,</span><span style="color: #CE9178;"> &quot;http://localhost:8000/health&quot;</span><span>]</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">      interval</span><span>:</span><span style="color: #CE9178;"> 30s</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">      timeout</span><span>:</span><span style="color: #CE9178;"> 10s</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">      retries</span><span>:</span><span style="color: #B5CEA8;"> 5</span></span>
+<span class="giallo-l"><span style="color: #569CD6;">      start_period</span><span>:</span><span style="color: #CE9178;"> 360s</span></span></code></pre>
+<p>启动后就是个标准的 OpenAI 兼容接口，<code>http://&lt;host&gt;:8000/v1</code>，<code>/health</code> 探活，跟平时用 vllm 没什么两样。</p>
+<h3 id="ji-ge-guan-jian-can-shu">几个关键参数</h3>
+<p>这份配置是在官方部署脚本的基础上做过精简的，剩下的都是必须项，挑几个关键的说说：</p>
+<ul>
+<li><code>--tensor-parallel-size 2</code> 和 <code>--quantization ascend</code>：双卡必须 TP=2——27B 的权重即使 w8a8 量化过，单卡 32G 也塞不下权重加 KV cache；量化走昇腾官方这条路最省心。</li>
+<li><code>--max-model-len 131072</code>：128K 上下文。真要顶满，KV cache 会吃掉不少显存，得看实际负载。</li>
+<li><code>--max-num-seqs 16</code> 和 <code>--max-num-batched-tokens 16384</code>：并发压得比较保守，主要是给长上下文让路，稳定比吞吐重要。</li>
+<li><code>--enable-prefix-caching</code>：多轮对话里前缀重复率高，开了之后体感明显。</li>
+<li><code>--speculative_config</code> 里的 MTP：投机解码，<code>num_speculative_tokens: 3</code>，算是白捡的速度，代价是显存多占一点。</li>
+<li><code>--reasoning-parser qwen3</code> 和 <code>--tool-call-parser qwen3_coder</code>：一个把思考过程拆成单独字段，一个用来接 agent 的工具调用。</li>
+</ul>
+<h2 id="er-xuan-xing-cong-qwen3-8-27b-chu-fa-rao-yi-quan-you-hui-lai">二、选型：从 qwen3.8-27b 出发，绕一圈又回来</h2>
+<h3 id="qi-dian-yi-kai-shi-jiu-ding-liao-ta">起点：一开始就定了它</h3>
+<p>选型其实没怎么纠结。一开始就定了 qwen3.8-27b——在单机双卡这个硬件配置里，据闻它是性能最好的那个。</p>
+<ul>
+<li>dense 架构，27B 的参数量，w8a8 量化后显存占用正好落在"两张 32G 卡能舒服放下"的区间里；</li>
+<li>能力上比小模型明显强一截，日常写代码、读文档、梳理逻辑基本够用；</li>
+<li>128K 的上下文能开起来，长文档、大文件不至于切得七零八落；</li>
+<li>支持 MTP 投机解码，速度这个短板也补上了；</li>
+<li>官方对 qwen3 系列的 reasoning parser 和 tool call parser 支持都跟得上，省心。</li>
+</ul>
+<p>27B 这个尺寸，在这个档位的硬件上，算是那个「甜点位」：不用纠结，直接用。</p>
+<h3 id="fan-che-shu-chu-da-json-shi-ta-bu-tu-zi-liao">翻车：输出大 JSON 时，它不吐字了</h3>
+<p>用着用着，就撞上了一个很尴尬的问题。</p>
+<p>有一个场景，需要模型输出一段比较大的 JSON 参数。结果就是：<strong>vllm 那边很久都没有吐出数据，最后请求超时失败。</strong></p>
+<p>不是报错，不是崩溃，就是安静。像极了开会时被点名的人。</p>
+<p>问了 AI，说是 vllm 在输出 tool call 参数的时候，会攒着完整的参数再一次性吐出来，所以大 JSON 这种场景就翻车了——参数没攒齐之前，前面什么都不吐，客户端的超时先到，请求就废了。这个说法不一定对，但现象是稳定的、可复现的。</p>
+<p>于是就有了换个思路的念头。</p>
+<h3 id="shuang-xiao-mo-xing-yi-ge-qia-yi-ge-ge-guan-yi-tan">双小模型：一个卡一个，各管一摊</h3>
+<p>我当时的想法是，既然大模型在"长时间不出字"这件事上翻车，那不如拆开——两张卡分别跑一个小模型，一个负责一摊事，单个请求的输出短一点、响应快一点，就不容易超时了。</p>
+<p>方案是两个单卡小模型：</p>
+<ol>
+<li>qwen3.5-9b，做需要世界知识的分析。</li>
+<li>minicpm5-2b，快快地干活。</li>
+</ol>
+<p>单卡跑得动，部署起来也轻松，理论上确实解决了"又慢又久"的问题。</p>
+<p>但很快就发现另一个更朴素的事实：<strong>小模型还是智商不足啊。</strong></p>
+<ul>
+<li>通用问答还凑合；</li>
+<li>需要知识时，就感觉没那么智能；</li>
+<li>尤其 minicpm5-2b 写查询 SQL，经常写错——字段名对不上、条件写反、语法缺东西，你纠正它一次，它下次还能错得不一样。</li>
+</ul>
+<p>省下的那点响应时间，全在"反复纠正、反复重试"里还回去了。而且重试本身也要时间，最后的总耗时并不比大模型好，体验还更差。</p>
+<h3 id="hui-dao-27b-ba-si-kao-jiang-xia-lai">回到 27b，把思考降下来</h3>
+<p>兜兜转转，还是回到了 qwen3.8-27b。</p>
+<p>这次换了个思路：既然问题出在"想太久、说得太慢"，那就不让它想那么久。<strong>把思考等级降到 low。</strong></p>
+<p>这个改动带来的变化挺明显：</p>
+<ul>
+<li>输出明显干脆了，不再动辄一整屏的思考过程；</li>
+<li>整体响应快了一截；</li>
+<li>代价是复杂推理上的深度会有点损失，但对这个场景来说，够用就行。</li>
+</ul>
+<p>但要说清楚：<strong>降思考只是提速，真正把那个大 JSON 的问题解决掉，靠的还是工程化。</strong></p>
+<p>思路是优化 agent 的流程——不再让它最后吐一个大 JSON，而是把前面的每一块工作先缓存起来，最后不用数据本身，只用各块的 id 来组装。具体的做法放在后面 agent 那一节说。</p>
+<p>绕了一圈，结论是：<strong>模型大小不是可以随便换的旋钮，把它换小，省下的是算力，付出的是正确率。</strong></p>
+<h2 id="san-agent-zhong-dian-bu-zai-mo-xing-zai-gong-ju">三、Agent：重点不在模型，在工具</h2>
+<p>模型跑起来之后，下一步自然就是拿它搭 agent。</p>
+<h3 id="wei-shen-me-shi-eino">为什么是 eino</h3>
+<p>框架选了 <a rel="external" href="https://github.com/cloudwego/eino">eino</a>，云原生那边开源的 Go LLM 应用框架。</p>
+<p>理由很直接：我们后端就是 Go 的，用它不用再跨语言折腾，模型、工具、编排都在一套代码里。</p>
+<h3 id="session-turn-step">session、turn、step</h3>
+<p>用之前先补了点概念课，简单说说我的理解：</p>
+<ul>
+<li><strong>session</strong>：一次会话的生命周期。里面有历史消息、有状态，跨多个回合持续存在。</li>
+<li><strong>turn</strong>：一轮交互，从用户输入开始，到最终给出回答结束。</li>
+<li><strong>step</strong>：turn 内部的一次原子动作。一次模型调用是一个 step，一次工具调用也是一个 step。</li>
+</ul>
+<p>一个 turn 往往由多个 step 串起来：模型思考 → 决定调用工具 → 工具返回 → 模型再看结果 → 决定下一步。理清这层结构之后，最大的好处是<strong>排障有着落了</strong>：效果不好时，能分清到底是模型判断错了、工具给的信息不对、还是编排的流程本身有问题，而不是笼统地说"这 agent 不行"。</p>
+<h3 id="xin-de-yong-gong-ju-qu-zhi-yue-mo-xing-er-bu-shi-zhi-wang-mo-xing">心得：用工具去制约模型，而不是指望模型</h3>
+<p>折腾下来，我最大的一点体会是：</p>
+<p><strong>至少在小的 LLM 上，靠"把工具设计好"来制约、或者说提效 agent，比指望模型变聪明见效快得多。</strong></p>
+<p>模型的能力是固定的，你改不动。但工具是你定义的，你可以让它"难以被用错"。</p>
+<h3 id="ju-ti-zuo-fa-bie-rang-llm-xie-sql-rang-ta-tian-ast">具体做法：别让 LLM 写 SQL，让它填 AST</h3>
+<p>最有代表性的是前面那个写 SQL 的场景。</p>
+<p>一开始的做法很直觉：让 LLM 自主探测表结构，自己写 SQL 语句。结果就是小模型各种翻车，大模型也不是永远稳。</p>
+<p>后来的做法是：<strong>不要直接让 LLM 写 SQL 了，而是提供一个类似 AST 构建器的东西。</strong></p>
+<p>思路是把"写 SQL"这件事拆开：</p>
+<ul>
+<li>代码这边定义好一套结构化的参数：查哪张表、选哪些字段、什么条件、什么操作符、怎么聚合、怎么排序、分页多少；</li>
+<li>让 AI 只做"填空"，输出这些结构化参数；</li>
+<li>工具内部再把这份结构转成 AST，最后生成 SQL。</li>
+</ul>
+<p>这么一改，效果立刻不一样：</p>
+<ul>
+<li><strong>格式管控在 tool 里</strong>。模型不需要记 SQL 方言的细节，也不需要拼字符串，出错的地方少了；</li>
+<li><strong>错误可以被结构化地拒绝</strong>。字段名不存在、操作符不合法，tool 直接拦下来，返回明确的错误信息，模型照着改就行，而不是给它一句语法错误的 SQL 让它自己猜；</li>
+<li><strong>能力边界清楚了</strong>。哪些能做、哪些不能做，是由工具定义的，不由模型的发挥决定。</li>
+</ul>
+<p>说白了，这就是把复杂性从模型搬到了代码里。写 SQL 本来就是个"填空 + 拼装"的问题，那就让模型只负责填空这一步它擅长的部分。</p>
+<h3 id="hui-dao-na-ge-da-json-chai-kai-huan-cun-zhi-chuan-id">回到那个大 JSON：拆开、缓存、只传 id</h3>
+<p>前面说的大 JSON 超时，最后不是靠降思考强度解决的，而是靠改 agent 的流程。</p>
+<p>原来的流程是：让模型一路做下来，最后一次性吐出所有参数。问题就出在这个"最后一次性"上——前面的工作成果全压在一个超大 JSON 里，输出又长又慢，还容易翻车。</p>
+<p>改法是把流程拆开：</p>
+<ul>
+<li>让前面的每一块工作先做、先落缓存，各产出各自的结果，不需要攒在一起；</li>
+<li>最后组装时，不要再把一大坨数据塞回模型，而是只传各块的 id，让工具按 id 去取缓存里的内容做拼装。</li>
+</ul>
+<p>这样一来，模型的输出从"一个大 JSON"变成了"若干个小的、单纯的调用"，每次要说的东西都很少，超时的风险自然就没了。而且中间结果有缓存，也能复用、能回看，出错了能定位到是哪一块。</p>
+<p>说到底还是那句话：<strong>把复杂性从模型搬到代码里。</strong></p>
+<h3 id="yi-dian-yan-shen">一点延伸</h3>
+<p>写到这里忽然想到：把模型围起来、给它定好工具和流程的这一整套，好像就是大家说的 harness 吧？难道这就是 harness 么——不太确定，先这么叫。</p>
+<h2 id="si-xiao-guo">四、效果</h2>
+<p>没做过压测，也没什么正经的 benchmark。目前基本没有并发，就是我自己在对话和 agent 里用。</p>
+<p>就这个体感来说，输出还是不错的：</p>
+<ul>
+<li>日常问答、读代码找问题，基本不用怎么催，能给出可用的答案；</li>
+<li>长文档喂进去，上下文不会明显掉链子；</li>
+<li>开了前缀缓存加投机解码之后，多轮对话的等待感明显下降。</li>
+</ul>
+<p>至于并发能力，等后续多用起来再说吧，现在说都是空话。</p>
+<h2 id="hu-si-luan-xiang">胡思乱想</h2>
+<p>这两件事折腾下来，有几个感受。</p>
+<p><strong>昇腾的生态也不错。</strong> vllm-ascend 的镜像和文档都做得不错，基本看官网的文档抄一份能跑的配置，再慢慢改。我这份 compose，基本也是这么来的。</p>
+<p><strong>小模型加好工具，有时候比大模型加裸提示更靠谱。</strong> 至少在我这个场景里，"降低模型难度"比"提升模型能力"要现实得多。</p>
+<p><strong>AI 时代程序员的活，好像越来越像"设计接口"了。</strong> 模型负责填，我们负责定义填什么、怎么校验、错了怎么办。这个活看起来简单，其实挺讲究。</p>
+<h2 id="hou-hua">后话</h2>
+<p>这次的部署，坦白说，绝大部分是照着文档和社区脚本抄+改出来的，我自己干的活主要是「敢于尝试」和「耐心等待编译」。</p>
+<p>下一步打算把 agent 那块再打磨打磨，把工具设计得更"笨"一点，看看小场景下能不能真的跑顺。到时候再写一篇。</p>
+<hr />
+<p>PS. 我说的「输出还是不错的」，是自用标准，不是生产标准。真要上生产，还是得压测、得验证，别拿这篇当验收依据。</p>
+<p>PS. 让模型填空，比让它自由创作，靠谱多了。这句话放在人身上好像也成立。</p>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/liepress-0-2/">liepress 0.2 发布：改了架构，加了图表</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-09-06T21:00:00+08:00">
+      Posted on September  6, 2026 at 21:00 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>前阵子写的<a rel="external" href="https://github.com/zzzdong/liepress">liepress</a>，是把 markdown 转成 pdf 的小工具。最近给它发了 <a rel="external" href="https://crates.io/crates/liepress">0.2</a> 版本，改动不小：架构重做了一遍，还顺手把图表支持加上了。</p>
+<p>这篇文章就简单记一下，0.2 到底改了啥。</p>
+<h2 id="xin-ban-ben">新版本</h2>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.pdf</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.svg</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> svg</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.png</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> png</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">liepress</span><span style="color: #569CD6;"> -i</span><span style="color: #CE9178;"> document.md</span><span style="color: #569CD6;"> -o</span><span style="color: #CE9178;"> document.docx</span><span style="color: #569CD6;"> -f</span><span style="color: #CE9178;"> docx</span></span></code></pre>
+<p>用法没什么变化，还是 <code>cargo install liepress</code> 就能装上。变化都在里面：</p>
+<ul>
+<li>架构改成了 <code>dom</code> → <code>ast</code> → <code>document</code> → 输出后端的分层。</li>
+<li>支持 <code>mermaid</code> 和 <code>liecharts</code> 代码块，可以画一些图。</li>
+<li>渲染基元统一到<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>，跟<a rel="external" href="https://crates.io/crates/liecharts">liecharts</a>、<a rel="external" href="https://crates.io/crates/liemermaid">liemermaid</a> 用同一套。</li>
+</ul>
+<h2 id="gai-jia-gou">改架构</h2>
+<p>0.1 的时候，基本就是「解析 markdown → 排版 → 画到 pdf」一条道走到黑，pdf 的逻辑和排版的逻辑搅在一起，想加个新的输出格式就很难受。</p>
+<p>于是参考了 <a rel="external" href="https://github.com/typst/typst">typst</a> 的思路——它是 markup 进来，先变成内容树，再排版成 frame，最后才交给导出后端。我也照着切了几层：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="plain"><span class="giallo-l"><span>输入 (.md / .html)</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   dom        HtmlElement 树 + CSS 级联（ResolvedStyle）</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>   ast        简化的带样式 AST：Node / NodeKind / Style</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> enrich       外绘（mermaid/liecharts → 内嵌图片）+ 代码高亮</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span> document     不分页的块树：Document / Block / TextLine</span></span>
+<span class="giallo-l"><span>      │</span></span>
+<span class="giallo-l"><span>      ▼</span></span>
+<span class="giallo-l"><span>  output      pdf(krilla) / svg / png / html / docx</span></span></code></pre>
+<p>其中最重要的是一条：<strong>Document 不知道页（Document is page-agnostic）</strong>。</p>
+<p><code>Document</code> 是一棵不分页的块树，每个块带着已经解析好的样式；分页是各个输出后端自己的事。pdf 后端自己切页，svg/png 干脆不切，html 流式，docx 交给 Word 自己排。这样一份 <code>Document</code> 可以喂给所有后端，加新后端时也不用再抄一遍分页逻辑。</p>
+<p>另外，把「外绘」和「语法高亮」提到了 AST 的富化阶段（enrich），一次性做完，产物直接挂在 AST 节点上。这样 mermaid 图和着色后的代码，在 pdf/svg/png/html/docx 里都一样有——不然每个后端各画一遍，那才叫灾难。</p>
+<h2 id="tu-biao">图表</h2>
+<p>写文档总要画点图，于是加了两个渲染器，都是用代码块的语言标签来触发：</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="markdown"><span class="giallo-l"><span>```mermaid</span></span>
+<span class="giallo-l"><span>flowchart TD</span></span>
+<span class="giallo-l"><span>    A[Start] --&gt; B{Check}</span></span>
+<span class="giallo-l"><span>    B -- yes --&gt; C[End]</span></span>
+<span class="giallo-l"><span>    B -- no --&gt; A</span></span>
+<span class="giallo-l"><span>```</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>```liecharts</span></span>
+<span class="giallo-l"><span>{&quot;title&quot;:{&quot;text&quot;:&quot;Sales&quot;},&quot;xAxis&quot;:[{&quot;type&quot;:&quot;category&quot;,&quot;data&quot;:[&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;]}],</span></span>
+<span class="giallo-l"><span>&quot;yAxis&quot;:[{&quot;type&quot;:&quot;value&quot;}],&quot;series&quot;:[{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:[120,200,150]}]}</span></span>
+<span class="giallo-l"><span>```</span></span></code></pre>
+<ul>
+<li><a rel="external" href="https://github.com/zzzdong/liemermaid">liemermaid</a>：纯 Rust 的 mermaid 解析+渲染，目前支持 flowchart、sequence、class、state、ER、pie、gitgraph、timeline。</li>
+<li><a rel="external" href="https://github.com/zzzdong/liecharts">liecharts</a>：受 ECharts 启发的图表库，配置是 ECharts 风格的 JSON，支持 line、bar、pie、area、scatter、radar、gauge、candlestick、boxplot、heatmap 等。</li>
+</ul>
+<p>两者都在 AST 富化阶段被渲染成内嵌的 PNG，就地替换成图片节点，所以五个输出后端都带图。渲染失败也不会炸，只是退化成原来的代码块，加一行注释。</p>
+<p>它们由 <code>charts</code> / <code>mermaid</code> 两个 feature 控制，默认都开着；不想要就 <code>--no-default-features</code>，编译会轻不少。</p>
+<h2 id="tong-yi-dao-lievisual">统一到 lievisual</h2>
+<p>最开始，liepress 里有一个简陋的 visual 系统，本来是从别的项目搬过来调试用的（可以输出 svg，方便我把分页结果丢给 AI 看）。后来写 liecharts、liemermaid 的时候，发现三边都在做同样的事情：几何、颜色、文本排版、画到 svg/png。</p>
+<p>干脆抽出来做成<a rel="external" href="https://crates.io/crates/lievisual">lievisual</a>：一份声明式的 <code>Scene</code> IR（图元 + 文本），底下挂不同的渲染后端（SVG、基于 <code>vello_cpu</code> 的 PNG 栅格化）。</p>
+<p>现在的分工就清爽了：</p>
+<ul>
+<li><code>liecharts</code> / <code>liemermaid</code> 只管把图和表算成 <code>Scene</code>。</li>
+<li><code>liepress</code> 的 svg/png 后端，则是把 <code>Document</code> 投影成 <code>Scene</code>（<code>document_to_scene</code>，全程 pt 坐标系，最后乘个 scale 归一到像素）。</li>
+<li>谁都不碰具体的 svg 字符串和像素缓冲。</li>
+</ul>
+<p>顺带的好处是，调试的时候输出一份 svg，肉眼能看，AI 也能读。</p>
+<h2 id="lai-shi-yi-shi">来试一试</h2>
+<p>还是老地方，有<a rel="external" href="https://zzzdong.github.io/liepress/">在线转换</a>可以玩，粘贴一段 markdown 就能出 pdf。图表的效果也可以在<a rel="external" href="https://zzzdong.github.io/liecharts/">liecharts</a>和<a rel="external" href="https://zzzdong.github.io/liemermaid/">liemermaid</a>的在线 demo 里先看一眼。</p>
+<p>目前支持的 markdown 语法仍然有限，字体、分页、表格这些也还有不少毛病。不过我自己写写中文文档、导个 pdf，是够用了。</p>
+<h2 id="hou-hua">后话</h2>
+<p>这次重构，基本是 AI 干的活。我只负责提想法、看结果、说「不对，重来」。</p>
+<p>typst 那一刀切得确实漂亮，抄它的思路改完之后，代码顺眼了很多，加后端也不再是噩梦——当然，也可能只是我又一次自我感觉良好。</p>
+<p>至于要不要继续往上加功能（更多 CSS、更多图表类型、更好的字体处理），就留给下一个版本吧。</p>
+<hr />
+<p>PS.</p>
+<ul>
+<li>
+<p>liepress、liecharts、liemermaid、lievisual 是一套，改一个另外几个就得跟着动，版本号一起升，有点累。</p>
+</li>
+<li>
+<p>这些代码绝大部分是 AI 写的。</p>
+</li>
+<li>
+<p>mermaid 的兼容性还在追，跟官方的 mermaid-cli 比，只能说「结构差不多」，像素级还差得远。</p>
+</li>
+</ul>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/kafka-client-support-kerberos/">kafka_client支持GSSAPI认证啦</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-17T18:00:00+08:00">
+      Posted on July 17, 2026 at 18:00 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <blockquote>
+<p>AI预警！Rust预警！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>在<a rel="external" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">上一篇文章中</a>不是介绍了纯 Rust 实现的 <a rel="external" href="https://crates.io/crates/kafka_client">kafka_client</a> 库么，有个小伙伴还去看了，并提了个<a rel="external" href="https://github.com/zzzdong/kafka_client/issues/1">issue</a>，说是没有支持 Kerberos 认证。</p>
+<p>既然有人要，那我就写一个吧。</p>
+<h2 id="shi-xian">实现</h2>
+<p>同样的，纯 Rust 是我们的追求，所以，在查找了一轮后，我又开始准备自己手撸了。</p>
+<p>同样的起手式，先AI对话问一下认证的流程和原理。依然是看着头疼，不管了，直接让它实现吧。在它干活的时候，自己找找文章看看 Kerberos 是怎样的。</p>
+<p>在经过各种磨难后，终于在 0.5.0 版本中，支持了 Kerberos 认证。</p>
+<p>项目的实现，采用 Rust-Crypto 的各种密码学库来实现各种算法。</p>
+<h2 id="mo-nan">磨难</h2>
+<p>这种功能的添加，最重要，就是先把集成测试先搭建起来。然后就可以让 AI 干活了。</p>
+<p>中间也是遇到了不少问题，比如：</p>
+<ul>
+<li>连接 KDC 获取 service ticket 失败，原因是 service principal 里 hostname 不一致————连接用 127.0.0.1 但 KDC 里注册的是 localhost。</li>
+<li>好不容易获取到service ticket，client构建认证数据格式不对，导致一直认证失败。</li>
+</ul>
+<p>反正我看着AI在修，也是感到头秃，在不断修，偶尔进入死胡同。修复时除了 CodeBuddy 上的 DeepSeek 和 HY3，也用 QWen 和 Kimi 来交叉代码审计。最后下载了不少RFC供AI阅读对照实现，终于跑通了。</p>
+<h2 id="si-xu-luan-fei">思绪乱飞</h2>
+<p>Kerberos 认证的支持是比较有意义的，在一些企业应用中，可能就是需要。</p>
+<p>在我看来，Kerberos 认证，就是引入一个第三方的认证中心，来验证用户的身份。客户端先去 kdc 获取 ticket，然后去 broker 拿到后，它再去 kdc 验证 ticket 的有效性。这样通过后，就完成认证了。</p>
+<p>还有就是对于这些比较复杂的认证机制，它们一般都是有规范和标准的，在实现时，第一步就是要先下载好 RFC 文档，让 AI 对照规范去实现。同时这些涉及密码学的算法，它们的规范可能有一些测试数据，可以使用它们构建测试用例来保证代码的健壮性。</p>
+<h2 id="hu-shuo-ba-dao">胡说八道</h2>
+<p>目前的LLM，知识广度和深度都是比很多人要强，但是在特定领域的，还是要依赖外部的资料，比如这次的RFC。所以写一些严格算法、实现时，可以考虑下载相关规范、文档给它。</p>
+<p>当前的实现，只是通过了一个简易的集成测试，在生产环境中，还需要进一步的测试和验证。</p>
+<blockquote>
+<p>你都路过了，顺手<a rel="external" href="https://github.com/zzzdong/kafka_client/">给个星星嘛~</a></p>
+</blockquote>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/i-wrote-a-kafka-client-lib/">我用vibe开发了纯Rust实现的Kafka客户端库，性能还不错</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-07T21:18:00+08:00">
+      Posted on July  7, 2026 at 21:18 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <blockquote>
+<p>AI预警！Rust预警！胡说八道警告！</p>
+</blockquote>
+<h2 id="qian-yan">前言</h2>
+<p>我用vibe code的方式开发了一个纯Rust实现的<a rel="external" href="https://github.com/zzzdong/kafka_client">Kafka客户端</a>，性能还不错。在<a rel="external" href="https://github.com/zzzdong/kafka-benchmark">测试</a>中，发现比Rust包装的<a rel="external" href="https://crates.io/crates/rdkafka/0.39.0">rdkafka</a>还快了一些————它是C库<a rel="external" href="https://github.com/confluentinc/librdkafka">librdkafka</a>的封装。</p>
+<p>在<a rel="external" href="https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/">上篇文章</a>中介绍的kfk就是基于它来实现的。</p>
+<h2 id="you-yi-si-de-kafka-xie-yi">有意思的 Kafka 协议</h2>
+<p>Kafka通信协议是挺有意思的，它基于自定义的二进制格式，在TCP的流上面，做了请求的多路复用。</p>
+<ul>
+<li>使用length prefix来编码请求的长度，然后是请求的二进制数据。</li>
+<li>使用correlation_id来关联请求和响应。</li>
+<li>使用握手协商版本来确定每类请求的版本。</li>
+<li>而编解码，又有一套flexible的编码格式， called "flexible encoding"。</li>
+<li>消息体的定义，又是提供基于json的定义，方便开发。</li>
+</ul>
+<p>不过，客户端和服务器的交互，需要客户端感知和处理的东西太多了，这点我不是很喜欢。</p>
+<h2 id="shi-xian">实现</h2>
+<p>在Rust的实现中，就是利用了json的消息定义，使用codegen的方式来生成消息体的struct。再利用Rust生成宏和trait来做编解码。</p>
+<p>根据分层的架构，</p>
+<ul>
+<li>Transport层，负责底层连接，TCP和TLS。</li>
+<li>Wire层，负责消息的编码解码。使用Tokio的Frame来实现。</li>
+<li>Application层，在协议交互之上，负责Consumer和Producer的逻辑。</li>
+</ul>
+<p>另外，提供了SASL协议验证，还有TLS通信。</p>
+<h2 id="xing-neng-bi-jiao">性能比较</h2>
+<blockquote>
+<p>就问你快不快，至于是否正确，你就不要管了。</p>
+</blockquote>
+<p>通过fork<a rel="external" href="https://github.com/fede1024/kafka-benchmark">rdkafka的benchmark</a>，加上kafka_client的benchmark，来对比性能。</p>
+<p>结果可以查看<a rel="external" href="https://zzzdong.github.io/kafka-benchmark/0.4.0_20260708/index.html">这里</a></p>
+<p>AI给出的结论：</p>
+<blockquote>
+<h3 id="1-kafka-client-quan-mian-ling-xian">1. kafka_client 全面领先</h3>
+<ul>
+<li>生产者平均提升 <strong>336.8%</strong></li>
+<li>消费者 Assign 模式平均提升 <strong>84.3%</strong></li>
+<li>消费者 Group 模式平均提升 <strong>33.6%</strong></li>
+</ul>
+<h3 id="2-xiao-xi-yue-xiao-you-shi-yue-ming-xian">2. 消息越小，优势越明显</h3>
+<ul>
+<li>小消息场景（10B）kafka_client 优化效果最显著</li>
+<li>大消息场景瓶颈在网络 IO，客户端实现差异不明显</li>
+</ul>
+<h3 id="3-assign-mo-shi-xing-neng-nian-ya-group">3. Assign 模式性能碾压 Group</h3>
+<ul>
+<li>Assign 比 Group 快几十到几百倍</li>
+<li>如无消费组语义需求，优先使用 Assign 模式</li>
+</ul>
+<h3 id="4-shu-ju-wan-zheng-xing-yan-zheng">4. 数据完整性验证</h3>
+<ul>
+<li>所有测试均通过消息计数、序列连续性、无重复验证</li>
+</ul>
+</blockquote>
+<h2 id="hu-shuo-ba-dao">胡说八道</h2>
+<p>Vibe code盛行的今日，给二流的程序员提供了机会，也可以展示自己的能力。也让我这些可以输出代码，污染环境。</p>
+<p>同时，Rust的特性，在AI agent中，好像更有利了一些，因为它的严格，以及性能。</p>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+    <article class="page">
+  <h2><a href="https://zzzdong.github.io/blog/i-wrote-a-kafka-cli/">我用 Rust 写了个 Kafka 命令行工具和 Rust 客户端</a></h2>
+  <div class="page-info">
+    <time class="smaller" datetime="2026-07-01T22:14:19+08:00">
+      Posted on July  1, 2026 at 22:14 CST
+    </time>
+  </div>
+
+  <div class="entry">
+    <h2 id="qian-yan">前言</h2>
+<p>近来我用rust写了一些小工具，比如这个<a rel="external" href="https://github.com/zzzdong/kfk">kfk</a>工具，来帮助我管理kafka集群。</p>
+<h2 id="gong-neng">功能</h2>
+<p>它是Rust实现，可以musl编译成静态二进制文件，没有外部依赖。可以自由在大部分的Linux上运行。</p>
+<pre class="giallo" style="color: #D4D4D4; background-color: #1E1E1E;" ><code data-lang="shellscript"><span class="giallo-l"><span style="color: #DCDCAA;">kfk</span><span style="color: #569CD6;"> --help</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">A</span><span style="color: #CE9178;"> pure Rust Kafka CLI tool for cluster management, topic operations, and message produce/consume</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">Usage:</span><span style="color: #CE9178;"> kfk</span><span> [OPTIONS] &lt;COMMAND&gt;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">Commands:</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  config</span><span style="color: #CE9178;">      Cluster configuration management</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  configs</span><span style="color: #CE9178;">     List all configured clusters</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  node</span><span style="color: #CE9178;">        Cluster node operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  nodes</span><span style="color: #CE9178;">       List all brokers</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  topic</span><span style="color: #CE9178;">       Topic operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  topics</span><span style="color: #CE9178;">      List all topics</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  produce</span><span style="color: #CE9178;">     Produce messages to a topic</span><span> (reads</span><span style="color: #CE9178;"> from stdin</span><span>)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  consume</span><span style="color: #CE9178;">     Consume messages from a topic</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  group</span><span style="color: #CE9178;">       Consumer group operations</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  groups</span><span style="color: #CE9178;">      List all consumer groups</span><span> (shorthand)</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  completion</span><span style="color: #CE9178;">  Generate shell completion script</span></span>
+<span class="giallo-l"><span style="color: #DCDCAA;">  help</span><span style="color: #CE9178;">        Print this message or the help of the given subcommand</span><span>(</span><span style="color: #DCDCAA;">s</span><span>)</span></span></code></pre>
+<p>提供常见的基本操作，在简易操作Kafka集群时，可以使用这个工具。比如: 测试集群是否正常，消费消息来调试等。</p>
+<p>欢迎各位使用，可以从<a rel="external" href="https://github.com/zzzdong/kfk/releases/">github</a>下载，我打包了Linux上的可执行文件。</p>
+<h2 id="yi-dian-gu-shi">一点故事</h2>
+<p>一开始，并没有想到写这个工具，初衷是我想要一个Rust的可以方便编译的Kafka客户端，来连接Kafka集群做消息的生产者和消费者。</p>
+<p>当前Rust生态中，推荐的是<a rel="external" href="https://crates.io/crates/rdkafka">rdkafka</a>，它是对librdkafka的Rust绑定。当我尝试使用rdkafka时，想做musl编译，但是遇到了一些问题，它依赖于openssl库————出名的难以交叉编译。</p>
+<p>在看到了一些其他的Rust Kafka客户端，比如<a rel="external" href="https://crates.io/crates/kafka">kafka</a>，它是一个纯Rust实现的Kafka客户端，没有依赖于任何外部库。但是它居然不支持SASL验证。</p>
+<p>既然这样，不如我自己实现一个吧。</p>
+<p>在AI的帮助下，磨了不少的时间，断断续续，终于实现了<a rel="external" href="https://github.com/zzzdong/kafka_client">kafka_client</a>。</p>
+<p>它是一个纯Rust实现的Kafka客户端，没有依赖于任何外部库。它支持SASL验证和TLS连接。虽然它的间接依赖库如rustls和zstd是需要编译C，但是在kfk编译验证发现不用额外的操作，只要有musl工具链就可以编译成功。</p>
+<h2 id="yi-xie-hu-si-luan-xiang">一些胡思乱想</h2>
+<p>在现在的AI盛行时代，很多时候，只需要一些想法，加以AI的辅助，就可以完成不错的结果。比如kfk这个命令行工具，差不多就是全部都是AI编写的，kafka_client也是大量的使用AI的辅助。</p>
+<p>那么，程序员的价值在哪里？是不是古法编程这些技术就要被废弃了？另外程序员应该面对AI？</p>
+<p>前不久，公司来了个实习生，在他口中，全部都直接给AI就可以了。对此我有些异议的。当前，全部依赖于AI，还是有些欠缺，可能是目前的AI技术还不够成熟，总感觉做得不够好。也可能是我自己想多了吧。</p>
+<p>另外，能看到的是，在AI的冲击下，程序员的角色正在发生改变。而且，新入门越来越难了，因为AI已经比很多初级程序员更专业了。像我，感觉自己就是一个AI的人形agent，做着一些AI在电脑上暂时无法完成的任务，遇到问题，就是无脑问AI。</p>
+<hr />
+<p>PS. Kafka自带的命令行真是难用的，我每次都要去查文档，而且它的引用config文件的参数还是不统一的。</p>
+<p>PS. Go写的<a rel="external" href="https://github.com/birdayz/kaf">kaf</a>命令行工具挺不错的，kfk受了它的启发。</p>
+</div>
+
+  <div class="page-footer">
+  </div>
+</article>
+
+</div>
+<div class="pagination">
+  <span class="previous-page">&lt;-- Previous</span>
+  <a href="https://zzzdong.github.io/page/2/" class="next-page">Next --&gt;</a>
+</div>
+    </main>
+  </div>
+  <footer>
+    <a href="https://github.com/zzzdong"><i class="svg-icon icon-github-circled"></i></a>
+    <a href="/atom.xml"><i class="svg-icon icon-rss"></i></a>
+<span class="copyright">&copy; 2025 - 2026 zzzdong</span>
+</footer>
+</body>
+
+</html>
